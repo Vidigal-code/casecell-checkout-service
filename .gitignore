@@ -10,6 +10,7 @@ coverage/
 pnpm-lock.yaml
 yarn.lock
 package-lock.json
+*.tsbuildinfo
 backend/node_modules/
 frontend/node_modules/
 backend/dist/
