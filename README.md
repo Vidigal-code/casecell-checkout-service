@@ -326,4 +326,3 @@ flowchart LR
 
 - Documentação detalhada por camada: `backend/README.md` e `frontend/README.md`.
 - Históricos de prompts registrados em `PROMPTS.md`.
-- Desafio técnico disponibilizado por [Coodesh](https://coodesh.com/).
