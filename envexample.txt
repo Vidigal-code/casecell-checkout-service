@@ -1,0 +1,4 @@
+# Exemplo de variáveis de ambiente gerais
+NODE_ENV=development
+PORT=3001
+# Ajuste as variáveis específicas nos diretórios backend/ e frontend/
