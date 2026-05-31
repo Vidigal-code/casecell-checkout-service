@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --header-height: 72px;
+}
+
+body {
+  @apply font-body bg-brand-light text-brand-dark dark:bg-brand-dark dark:text-brand-light;
+  background-image: var(--page-background, none);
+  min-height: 100vh;
+}
+
+.bg-orb-gradient {
+  background-image: radial-gradient(circle at 10% 10%, rgba(255, 95, 109, 0.25), transparent 55%),
+    radial-gradient(circle at 90% 20%, rgba(255, 195, 113, 0.25), transparent 60%),
+    radial-gradient(circle at 50% 80%, rgba(56, 182, 255, 0.25), transparent 65%);
+}
+
+.bg-grid-pattern {
+  background-image: linear-gradient(
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 1px
+    );
+  background-size: 32px 32px;
+}
+
+.glass-panel {
+  @apply bg-white/70 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-lg;
+}

@@ -1,0 +1,27 @@
+import * as Joi from 'joi';
+
+export const configValidationSchema = Joi.object({
+  NODE_ENV: Joi.string().valid('development', 'test', 'production').default('development'),
+  PORT: Joi.number().default(3001),
+  DATABASE_URL: Joi.string().uri().required(),
+  REDIS_HOST: Joi.string().default('localhost'),
+  REDIS_PORT: Joi.number().default(6379),
+  REDIS_PASSWORD: Joi.string().allow('', null),
+  JWT_ACCESS_TOKEN_SECRET: Joi.string().min(16).required(),
+  JWT_ACCESS_TOKEN_EXPIRES_IN: Joi.string().default('900s'),
+  JWT_REFRESH_TOKEN_SECRET: Joi.string().min(16).required(),
+  JWT_REFRESH_TOKEN_EXPIRES_IN: Joi.string().default('7d'),
+  ERP_SIMULATION_FAILURE_RATE: Joi.number().min(0).max(1).default(0.3),
+  ERP_SIMULATION_MIN_DELAY_MS: Joi.number().min(0).default(800),
+  ERP_SIMULATION_MAX_DELAY_MS: Joi.number().min(0).default(2500),
+  IDEMPOTENCY_TTL_SECONDS: Joi.number().min(1).default(600),
+  RATE_LIMIT_TTL: Joi.number().min(1).default(60),
+  RATE_LIMIT_MAX: Joi.number().min(1).default(30),
+  CIRCUIT_BREAKER_FAILURE_THRESHOLD: Joi.number().min(1).default(5),
+  CIRCUIT_BREAKER_RESET_TIMEOUT_MS: Joi.number().min(1000).default(60000),
+  PRODUCTS_CACHE_TTL_SECONDS: Joi.number().min(5).default(60),
+  ADMIN_EMAIL: Joi.string().email().required(),
+  ADMIN_PASSWORD: Joi.string().min(6).required(),
+  CUSTOMER_EMAIL: Joi.string().email().required(),
+  CUSTOMER_PASSWORD: Joi.string().min(6).required(),
+});
