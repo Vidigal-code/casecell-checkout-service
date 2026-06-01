@@ -29,8 +29,8 @@ const heroHighlights = [
 
 export function HomeExperience() {
   const [selectedProduct, setSelectedProduct] = useState<Product | undefined>();
-  const loginRoute = '/login' satisfies Route;
-  const registerRoute = '/register' satisfies Route;
+  const loginRoute = '/login' as Route;
+  const registerRoute = '/register' as Route;
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-6 py-16">

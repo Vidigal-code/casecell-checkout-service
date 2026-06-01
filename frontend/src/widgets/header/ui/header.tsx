@@ -8,12 +8,12 @@ import { AuthMenu } from '@/features/auth/ui/auth-menu';
 import { ThemeToggle } from '@/features/theme/ui/theme-toggle';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const navItems = [
-  { href: '/', label: 'Vitrine' },
-  { href: '/cart', label: 'Carrinho' },
-  { href: '/login', label: 'Login' },
-  { href: '/register', label: 'Cadastro' },
-] satisfies Array<{ href: Route; label: string }>;
+const navItems: Array<{ href: Route; label: string }> = [
+  { href: '/' as Route, label: 'Vitrine' },
+  { href: '/cart' as Route, label: 'Carrinho' },
+  { href: '/login' as Route, label: 'Login' },
+  { href: '/register' as Route, label: 'Cadastro' },
+];
 
 export function Header() {
   const [isMenuOpen, setMenuOpen] = useState(false);
