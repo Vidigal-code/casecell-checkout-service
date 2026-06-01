@@ -6,8 +6,18 @@ import { clearSession, setCredentials } from '@/features/auth/model/auth-slice';
 let isRefreshing = false;
 let pendingRequests: Array<(token: string | null) => void> = [];
 
+const isBrowser = typeof window !== 'undefined';
+
+const trimTrailingSlash = (value: string) => (value.endsWith('/') && value !== '/' ? value.slice(0, -1) : value);
+const ensureLeadingSlash = (value: string) => (value.startsWith('/') ? value : `/${value}`);
+
+const browserBaseUrl = trimTrailingSlash(env.apiBaseUrl);
+const apiPath = trimTrailingSlash(ensureLeadingSlash(env.apiBasePath));
+
+const baseURL = isBrowser ? browserBaseUrl : `${env.internalApiBaseUrl}${apiPath}`;
+
 const api = axios.create({
-  baseURL: env.apiBaseUrl,
+  baseURL,
   withCredentials: false,
 });
 
@@ -46,7 +56,10 @@ api.interceptors.response.use(
       }
 
       try {
-        const { data } = await axios.post(`${env.apiBaseUrl.replace(/\/$/, '')}/auth/refresh`, {
+        const refreshUrl = isBrowser
+          ? `${browserBaseUrl}/auth/refresh`
+          : `${env.internalApiBaseUrl}${apiPath}/auth/refresh`;
+        const { data } = await axios.post(refreshUrl, {
           refreshToken,
         });
         store.dispatch(

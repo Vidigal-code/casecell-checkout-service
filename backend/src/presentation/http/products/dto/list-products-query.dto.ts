@@ -1,4 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Type, Transform } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { inline } from '@shared/i18n/bilingual';
 
@@ -14,6 +15,7 @@ export class ListProductsQueryDto {
   @IsInt()
   @Min(1)
   @IsOptional()
+  @Type(() => Number)
   page = 1;
 
   @ApiPropertyOptional({
@@ -29,6 +31,7 @@ export class ListProductsQueryDto {
   @Min(1)
   @Max(50)
   @IsOptional()
+  @Type(() => Number)
   pageSize = 10;
 
   @ApiPropertyOptional({
@@ -40,5 +43,12 @@ export class ListProductsQueryDto {
   })
   @IsString()
   @IsOptional()
+  @Transform(({ value }) => {
+    if (value === undefined || value === null) {
+      return undefined;
+    }
+    const trimmed = `${value}`.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+  })
   search?: string;
 }

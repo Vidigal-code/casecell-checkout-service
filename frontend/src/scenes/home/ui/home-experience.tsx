@@ -1,65 +1,112 @@
 "use client";
 
 import { useState } from 'react';
+import Link from 'next/link';
+import type { Route } from 'next';
 import { motion } from 'framer-motion';
+import { ShieldCheck, Zap, RefreshCw, ShoppingCart } from 'lucide-react';
 import { Product } from '@/entities/product/model/types';
 import { ProductGrid } from '@/widgets/product-grid/ui/product-grid';
-import { CheckoutForm } from '@/features/checkout/ui/checkout-form';
-import { LoginPanel } from '@/features/auth/ui/login-panel';
 import { StatusMessage } from '@/shared/ui/status-message';
-import { ShieldCheck, Zap, RefreshCw } from 'lucide-react';
+
+const heroHighlights = [
+  {
+    icon: <Zap className="h-5 w-5 text-brand-primary" />,
+    title: 'Vitrine performática',
+    description: 'Produtos carregam em milissegundos graças ao cache local e paginação eficiente.',
+  },
+  {
+    icon: <ShieldCheck className="h-5 w-5 text-brand-primary" />,
+    title: 'Estoque consistente',
+    description: 'Reservas atômicas com Redis evitam overselling mesmo sob concorrência alta.',
+  },
+  {
+    icon: <RefreshCw className="h-5 w-5 text-brand-primary" />,
+    title: 'ERP desacoplado',
+    description: 'Simulação de latência e circuit-breaker protegem o checkout de instabilidades.',
+  },
+];
 
 export function HomeExperience() {
   const [selectedProduct, setSelectedProduct] = useState<Product | undefined>();
+  const loginRoute = '/login' as Route;
+  const registerRoute = '/register' as Route;
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-6 py-16">
       <section
         id="experience"
-        className="grid gap-10 rounded-3xl border border-white/10 bg-white/5 p-10 text-white shadow-2xl md:grid-cols-[1.1fr_0.9fr]"
+        className="grid gap-10 rounded-4xl border border-transparent bg-transparent p-0 md:grid-cols-[1.1fr_0.9fr]"
       >
-        <div className="space-y-6">
+        <div className="space-y-8 rounded-3xl border border-neutral-200 bg-white/95 p-10 shadow-2xl backdrop-blur-md transition-colors dark:border-slate-800/70 dark:bg-slate-950/85 dark:shadow-black/60">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs uppercase tracking-wider text-white/70">
-              <Zap className="h-4 w-4 text-brand-secondary" />
+            <span className="inline-flex items-center gap-2 rounded-full bg-brand-primary/10 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-brand-primary dark:bg-brand-primary/20">
+              <Zap className="h-4 w-4" />
               Checkout resiliente
             </span>
-            <h1 className="mt-4 font-display text-4xl md:text-5xl">
-              Latência controlada, estoque consistente e duplicidade zero.
+            <h1 className="mt-4 font-display text-4xl text-neutral-900 dark:text-slate-100 md:text-5xl">
+              Latência controlada e estoque consistente para milhões de acessos.
             </h1>
-            <p className="mt-4 text-lg text-white/70">
-              Este mini-projeto demonstra como desacoplar o ERP das jornadas críticas: cache de produtos,
-              reserva de estoque transacional, idempotência distribuída com Redis e simulação de falha no ERP.
+            <p className="mt-4 text-lg text-neutral-600 dark:text-slate-300">
+              Desacoplamos o ERP das jornadas críticas com cache inteligente, locks distribuídos e idempotência. O resultado é uma experiência de compra fluída mesmo em cenários instáveis.
             </p>
           </motion.div>
 
           <div className="grid gap-4 md:grid-cols-3">
-            <StatusMessage tone="info" title="Vitrine performática" description="Produtos servidos via API local com paginação e filtros, evitando chamadas diretas ao ERP." />
-            <StatusMessage tone="success" title="Estoque confiável" description="Reservas atômicas + lock distribúido no Redis impedem overselling em cenários concorrentes." />
-            <StatusMessage tone="warning" title="ERP instável" description="Pedidos enfrentam latência aleatória; respostas são categorizadas e comunicadas ao cliente." />
+            {heroHighlights.map((item) => (
+              <div
+                key={item.title}
+                className="rounded-3xl border border-neutral-200 bg-white/90 p-4 shadow-sm backdrop-blur-sm transition-colors dark:border-slate-800/70 dark:bg-slate-950/70 dark:shadow-black/40"
+              >
+                <div className="flex items-center gap-2 text-sm font-semibold text-neutral-700 dark:text-slate-200">
+                  {item.icon}
+                  {item.title}
+                </div>
+                <p className="mt-3 text-sm text-neutral-500 dark:text-slate-300">{item.description}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href={loginRoute}
+              className="inline-flex items-center gap-2 rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-primary/40 transition hover:shadow-brand-primary/60"
+            >
+              <ShoppingCart className="h-4 w-4" />
+              Acessar conta
+            </Link>
+            <Link
+              href={registerRoute}
+              className="inline-flex items-center gap-2 rounded-full border border-brand-primary/40 px-6 py-3 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary/10 dark:border-brand-primary/60 dark:text-brand-primary/90"
+            >
+              Criar conta
+            </Link>
           </div>
         </div>
 
-        <LoginPanel />
+        <aside className="space-y-4 rounded-3xl border border-neutral-200 bg-gradient-to-br from-brand-light via-white to-white p-8 shadow-xl backdrop-blur-md transition-colors dark:border-slate-800/70 dark:bg-gradient-to-br dark:from-slate-950/90 dark:via-slate-900/80 dark:to-slate-950/90 dark:shadow-black/60">
+          <h2 className="font-display text-2xl text-neutral-900 dark:text-slate-100">O que você pode testar</h2>
+          <StatusMessage tone="info" title="Resiliência" description="Simulamos latência e falhas do ERP enquanto protegemos a experiência do cliente." />
+          <StatusMessage tone="success" title="Consistência" description="Reservas atômicas mantêm estoque sincronizado sem acessar o ERP diretamente." />
+          <StatusMessage tone="warning" title="Observabilidade" description="Acompanhe status do pedido, health check e métricas Prometheus integradas." />
+        </aside>
       </section>
 
       <ProductGrid onSelect={setSelectedProduct} selectedProductId={selectedProduct?.id} />
 
-      <CheckoutForm product={selectedProduct} />
-
-      <section className="mb-16 grid gap-6 rounded-3xl border border-white/10 bg-brand-dark/70 p-6 text-white shadow-xl md:grid-cols-3">
+      <section className="mb-16 grid gap-6 rounded-3xl border border-neutral-200 bg-white/95 p-6 shadow-xl backdrop-blur-md transition-colors md:grid-cols-3 dark:border-slate-800/70 dark:bg-slate-950/80 dark:shadow-black/60">
         <FeatureCard
-          icon={<ShieldCheck className="h-6 w-6" />}
+          icon={<ShieldCheck className="h-6 w-6 text-brand-primary" />}
           title="Idempotência no backend"
-          description="Cada tentativa envia uma `Idempotency-Key`. Respostas são cacheadas temporariamente em Redis e reusadas."/>
+          description="Cada tentativa envia uma Idempotency-Key e reaproveita resultados seguros armazenados em Redis." />
         <FeatureCard
-          icon={<RefreshCw className="h-6 w-6" />}
+          icon={<RefreshCw className="h-6 w-6 text-brand-primary" />}
           title="Retries conscientes"
-          description="Falhas técnicas não reduzem estoque. Usuário recebe orientação para tentar novamente sem prejuízo."/>
+          description="Falhas técnicas não reduzem estoque; orientações claras incentivam o retry sem atritos." />
         <FeatureCard
-          icon={<Zap className="h-6 w-6" />}
+          icon={<Zap className="h-6 w-6 text-brand-primary" />}
           title="Observabilidade"
-          description="Logs estruturados em JSON e endpoint de health check garantem rastreabilidade por pedido."/>
+          description="Logs estruturados, health check e métricas expõem cada etapa do checkout." />
       </section>
     </div>
   );
@@ -75,12 +122,12 @@ interface FeatureCardProps {
 
 function FeatureCard({ icon, title, description }: FeatureCardProps) {
   return (
-    <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-primary/15 text-brand-secondary">
+    <div className="space-y-3 rounded-2xl border border-neutral-200 bg-white/95 p-4 shadow-sm backdrop-blur-sm transition-colors dark:border-slate-800/70 dark:bg-slate-950/70 dark:shadow-black/50">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-primary/15 text-brand-primary dark:bg-brand-primary/25">
         {icon}
       </div>
-      <h3 className="font-display text-lg text-white">{title}</h3>
-      <p className="text-sm text-white/70">{description}</p>
+      <h3 className="font-display text-lg text-neutral-900 dark:text-slate-100">{title}</h3>
+      <p className="text-sm text-neutral-600 dark:text-slate-300">{description}</p>
     </div>
   );
 }

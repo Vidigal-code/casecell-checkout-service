@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ProductRepository } from '@domain/product/product.repository';
-import { Product } from '@domain/product/product.entity';
 import { TOKENS } from '@shared/tokens';
 import { ProductsCache } from './products-cache';
-import { PaginatedProductsDto, ProductDto } from './dto/product.dto';
+import { PaginatedProductsDto } from './dto/product.dto';
 import { ListProductsInputDto } from './dto/list-products-input.dto';
+import { toProductDto } from './product.presenter';
 
 export type ListProductsInput = ListProductsInputDto;
 
@@ -18,7 +18,7 @@ export class ListProductsQuery {
   ) {}
 
   async execute(input: ListProductsInput): Promise<PaginatedProductsDto> {
-    const cached = await this.cache.get(input);
+    const cached = await this.safeCacheGet(input);
     if (cached) {
       return cached;
     }
@@ -30,25 +30,30 @@ export class ListProductsQuery {
     });
 
     const response: PaginatedProductsDto = {
-      data: result.data.map(this.toProductDto),
+      data: result.data.map(toProductDto),
       total: result.total,
       page: result.page,
       pageSize: result.pageSize,
     };
 
-    await this.cache.set(input, response);
+    await this.safeCacheSet(input, response);
     return response;
   }
 
-  private toProductDto(product: Product): ProductDto {
-    return {
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      sku: product.sku,
-      priceCents: product.priceCents,
-      stock: product.stock,
-      imageUrl: product.imageUrl,
-    };
+  private async safeCacheGet(params: ListProductsInput): Promise<PaginatedProductsDto | null> {
+    try {
+      return await this.cache.get(params);
+    } catch (error) {
+      // Intentionally swallow cache errors to keep product listing available
+      return null;
+    }
+  }
+
+  private async safeCacheSet(params: ListProductsInput, data: PaginatedProductsDto): Promise<void> {
+    try {
+      await this.cache.set(params, data);
+    } catch (error) {
+      // Ignore cache persistence issues so users still receive the fresh data
+    }
   }
 }
