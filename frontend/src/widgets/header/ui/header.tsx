@@ -8,12 +8,12 @@ import { AuthMenu } from '@/features/auth/ui/auth-menu';
 import { ThemeToggle } from '@/features/theme/ui/theme-toggle';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const navItems: Array<{ href: Route; label: string }> = [
-  { href: '/' as Route, label: 'Vitrine' },
-  { href: '/cart' as Route, label: 'Carrinho' },
-  { href: '/login' as Route, label: 'Login' },
-  { href: '/register' as Route, label: 'Cadastro' },
-];
+const navItems = [
+  { href: '/', label: 'Vitrine' },
+  { href: '/cart', label: 'Carrinho' },
+  { href: '/login', label: 'Login' },
+  { href: '/register', label: 'Cadastro' },
+] satisfies Array<{ href: Route; label: string }>;
 
 export function Header() {
   const [isMenuOpen, setMenuOpen] = useState(false);
@@ -32,7 +32,7 @@ export function Header() {
           {navItems.map((item) => (
             <Link
               key={item.href}
-              href={item.href as Route}
+              href={item.href}
               className="text-sm font-semibold text-neutral-500 transition hover:text-brand-primary dark:text-slate-300 dark:hover:text-brand-primary/80"
             >
               {item.label}
@@ -67,7 +67,7 @@ export function Header() {
               {navItems.map((item) => (
                 <Link
                   key={item.href}
-                  href={item.href as Route}
+                  href={item.href}
                   onClick={() => setMenuOpen(false)}
                   className="block text-sm font-semibold text-neutral-600 dark:text-slate-300"
                 >
