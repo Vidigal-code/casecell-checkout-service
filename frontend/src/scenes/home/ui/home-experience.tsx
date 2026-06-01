@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ShieldCheck, Zap, RefreshCw, ShoppingCart } from 'lucide-react';
 import { Product } from '@/entities/product/model/types';
@@ -26,6 +27,9 @@ const heroHighlights = [
     description: 'Simulação de latência e circuit-breaker protegem o checkout de instabilidades.',
   },
 ];
+
+const heroShowcaseImage =
+  'https://images.placeholders.dev/?width=720&height=480&text=CaseCell%20Checkout&fontSize=56&color=%230C1B33&background=%23F5F2EE';
 
 export function HomeExperience() {
   const [selectedProduct, setSelectedProduct] = useState<Product | undefined>();
@@ -81,7 +85,19 @@ export function HomeExperience() {
           </div>
         </div>
 
-        <aside className="space-y-4 rounded-3xl border border-neutral-200 bg-gradient-to-br from-brand-light via-white to-white p-8 shadow-xl backdrop-blur-md transition-colors dark:border-slate-800/70 dark:bg-gradient-to-br dark:from-slate-950/90 dark:via-slate-900/80 dark:to-slate-950/90 dark:shadow-black/60">
+        <aside className="space-y-5 rounded-3xl border border-neutral-200 bg-gradient-to-br from-brand-light via-white to-white p-8 shadow-xl backdrop-blur-md transition-colors dark:border-slate-800/70 dark:bg-gradient-to-br dark:from-slate-950/90 dark:via-slate-900/80 dark:to-slate-950/90 dark:shadow-black/60">
+          <div className="relative overflow-hidden rounded-3xl border border-neutral-100/60 bg-white/40 shadow-inner shadow-white/40 dark:border-slate-800/60 dark:bg-slate-900/60 dark:shadow-black/30">
+            <div className="relative aspect-[4/3] w-full">
+              <Image
+                src={heroShowcaseImage}
+                alt="Painel de pedidos CaseCell exibindo performance do checkout"
+                fill
+                priority
+                sizes="(min-width: 1024px) 380px, 100vw"
+                className="object-cover"
+              />
+            </div>
+          </div>
           <h2 className="font-display text-2xl text-neutral-900 dark:text-slate-100">O que você pode testar</h2>
           <StatusMessage tone="info" title="Resiliência" description="Simulamos latência e falhas do ERP enquanto protegemos a experiência do cliente." />
           <StatusMessage tone="success" title="Consistência" description="Reservas atômicas mantêm estoque sincronizado sem acessar o ERP diretamente." />
