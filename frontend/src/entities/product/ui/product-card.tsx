@@ -1,9 +1,10 @@
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Smartphone } from 'lucide-react';
 import { Product } from '@/entities/product/model/types';
 import { formatCurrency } from '@/shared/lib/format-currency';
 import { Button } from '@/shared/ui/button';
+import { getProductFallbackImage } from '@/entities/product/lib/get-product-fallback-image';
 
 interface ProductCardProps {
   product: Product;
@@ -13,12 +14,21 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onSelect, isSelected, onAddToCart }: ProductCardProps) {
+  const fallbackImage = useMemo(() => getProductFallbackImage(product.name), [product.name]);
   const [imageError, setImageError] = useState(false);
+  const [currentSrc, setCurrentSrc] = useState(product.imageUrl ?? fallbackImage);
+  const [hasTriedFallback, setHasTriedFallback] = useState(!product.imageUrl);
   const initials = product.name
     .split(' ')
     .slice(0, 2)
     .map((word) => word.charAt(0).toUpperCase())
     .join('');
+
+  useEffect(() => {
+    setCurrentSrc(product.imageUrl ?? fallbackImage);
+    setHasTriedFallback(!product.imageUrl);
+    setImageError(false);
+  }, [product.id, product.imageUrl, fallbackImage]);
 
   return (
     <article
@@ -28,14 +38,21 @@ export function ProductCard({ product, onSelect, isSelected, onAddToCart }: Prod
     >
       <button type="button" onClick={() => onSelect?.(product)} className="flex flex-col gap-4 text-left">
         <div className="relative h-44 w-full overflow-hidden rounded-2xl bg-gradient-to-br from-brand-primary/15 via-brand-secondary/15 to-brand-primary/15">
-          {product.imageUrl && !imageError ? (
+          {!imageError ? (
             <Image
               fill
-              src={product.imageUrl}
+              src={currentSrc}
               alt={product.name}
               sizes="(min-width: 1280px) 320px, (min-width: 768px) 45vw, 90vw"
               className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-              onError={() => setImageError(true)}
+              onError={() => {
+                if (!hasTriedFallback) {
+                  setHasTriedFallback(true);
+                  setCurrentSrc(fallbackImage);
+                } else {
+                  setImageError(true);
+                }
+              }}
             />
           ) : (
             <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-gradient-to-br from-brand-primary/40 via-brand-secondary/30 to-brand-primary/40 text-white">

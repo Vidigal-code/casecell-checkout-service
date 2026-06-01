@@ -11,6 +11,7 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { formatCurrency } from '@/shared/lib/format-currency';
 import { useAppDispatch } from '@/shared/store/hooks';
 import { addItem } from '@/features/cart/model/cart-slice';
+import { getProductFallbackImage } from '@/entities/product/lib/get-product-fallback-image';
 
 interface ProductGridProps {
   onSelect(product: Product): void;
@@ -128,14 +129,16 @@ export function ProductGrid({ onSelect, selectedProductId }: ProductGridProps) {
               .slice(0, 2)
               .map((word) => word.charAt(0).toUpperCase())
               .join('');
-            const hasPreview = Boolean(product.imageUrl && !previewErrorMap[product.id]);
+            const fallbackImage = getProductFallbackImage(product.name);
+            const candidateSrc = product.imageUrl ?? fallbackImage;
+            const hasPreview = !previewErrorMap[product.id];
             return (
               <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
                 <div className="relative h-24 w-full overflow-hidden rounded-3xl bg-white/40 shadow-inner shadow-brand-primary/20 sm:h-24 sm:w-32 dark:bg-brand-primary/10 dark:shadow-brand-primary/30">
                   {hasPreview ? (
                     <Image
                       fill
-                      src={product.imageUrl as string}
+                      src={candidateSrc}
                       alt={`Pré-visualização de ${product.name}`}
                       sizes="(min-width: 1024px) 160px, 50vw"
                       className="object-cover"
