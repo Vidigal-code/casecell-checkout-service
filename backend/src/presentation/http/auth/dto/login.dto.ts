@@ -5,8 +5,8 @@ import { inline } from '@shared/i18n/bilingual';
 export class LoginDto {
   @ApiProperty({
     description: inline({
-      pt: 'E-mail do usuário seed (admin@casecell.shop ou customer@casecell.shop).',
-      en: 'Seed user e-mail (admin@casecell.shop or customer@casecell.shop).',
+      pt: 'E-mail do usuário cadastrado.',
+      en: 'Registered user e-mail.',
     }),
     example: 'customer@casecell.shop',
   })
@@ -15,12 +15,12 @@ export class LoginDto {
 
   @ApiProperty({
     description: inline({
-      pt: 'Senha vinculada ao usuário seed.',
-      en: 'Password associated with the seeded user.',
+      pt: 'Senha forte com letras maiúsculas, minúsculas, números e caractere especial.',
+      en: 'Strong password containing uppercase, lowercase, numbers and a special character.',
     }),
-    example: 'customer123',
+    example: 'Cliente12345@',
   })
   @IsString()
-  @MinLength(6)
+  @MinLength(10)
   password!: string;
 }

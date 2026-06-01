@@ -22,6 +22,5 @@
 - 2026-05-31 — Received the full CaseCellShop technical challenge brief (fullstack mini-project focused on resilient checkout, fast storefront, and inventory consistency).
 - 2026-05-31 — Delivery plan defined: build dedicated APIs, FSD frontend, observability, automated tests, and bilingual documentation.
 - 2026-05-31 — Final scope clarification: satisfy 100% of requirements (conceptual answers, detailed README, bilingual Swagger) and prepare the repo for publication on a personal GitHub account.
-- 2026-05-31 — Documentation synced with the final architecture (NestJS modules, Next.js scenes, BullMQ/ERP flow) across all `.md` files.
 
 </details>

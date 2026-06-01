@@ -4,6 +4,7 @@ import { UnauthorizedError, ValidationError } from '@domain/common/errors';
 import { PasswordHasher } from '../ports/password-hasher';
 import { TokenPair, TokenService } from '../ports/token-service';
 import { TOKENS } from '@shared/tokens';
+import { toAuthenticatedUserDto } from './auth.presenter';
 
 export interface AuthenticateUserInput {
   email: string;
@@ -34,7 +35,8 @@ export class AuthenticateUserCommand {
       throw new ValidationError('Email and password are required.');
     }
 
-    const user = await this.userRepository.findByEmail(input.email);
+    const normalizedEmail = input.email.trim().toLowerCase();
+    const user = await this.userRepository.findByEmail(normalizedEmail);
     if (!user || !user.isActive) {
       throw new UnauthorizedError('Invalid credentials.');
     }
@@ -50,13 +52,6 @@ export class AuthenticateUserCommand {
       role: user.role,
     });
 
-    return {
-      ...tokens,
-      user: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-      },
-    };
+    return toAuthenticatedUserDto(user, tokens);
   }
 }

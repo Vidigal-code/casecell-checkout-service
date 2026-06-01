@@ -4,9 +4,11 @@ import { Queue } from 'bullmq';
 import { TOKENS } from '@shared/tokens';
 import { ErpSyncProcessor } from './erp-sync.processor';
 import { ErpSyncWorker } from './erp-sync.worker';
+import { CoreProvidersModule } from '@infrastructure/core/core-providers.module';
 
 @Global()
 @Module({
+  imports: [CoreProvidersModule],
   providers: [
     {
       provide: TOKENS.ERP_SYNC_QUEUE,

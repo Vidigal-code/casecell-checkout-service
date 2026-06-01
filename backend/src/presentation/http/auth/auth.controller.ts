@@ -1,9 +1,11 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthenticateUserCommand } from '@application/auth/authenticate-user.command';
 import { RefreshTokenCommand } from '@application/auth/refresh-token.command';
+import { RegisterUserCommand } from '@application/auth/register-user.command';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { RegisterDto } from './dto/register.dto';
 import { inline, multiline } from '@shared/i18n/bilingual';
 import { SWAGGER_OPERATIONS, SWAGGER_RESPONSES, SWAGGER_TAGS } from '@presentation/http/docs/swagger.i18n';
 
@@ -13,7 +15,19 @@ export class AuthController {
   constructor(
     private readonly authenticateUser: AuthenticateUserCommand,
     private readonly refreshTokenCommand: RefreshTokenCommand,
+    private readonly registerUserCommand: RegisterUserCommand,
   ) {}
+
+  @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: inline(SWAGGER_OPERATIONS.auth.register.summary),
+    description: multiline(SWAGGER_OPERATIONS.auth.register.description),
+  })
+  @ApiCreatedResponse({ description: inline(SWAGGER_RESPONSES.auth.register.ok) })
+  register(@Body() body: RegisterDto) {
+    return this.registerUserCommand.execute(body);
+  }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)

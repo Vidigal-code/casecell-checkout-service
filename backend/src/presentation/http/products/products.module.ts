@@ -1,23 +1,24 @@
 import { Module } from '@nestjs/common';
 import { ProductsController } from './products.controller';
 import { ListProductsQuery } from '@application/products/list-products.query';
-import { TOKENS } from '@shared/tokens';
-import { PrismaProductRepository } from '@infrastructure/product/prisma-product.repository';
-import { RedisProductsCache } from '@infrastructure/product/redis-products.cache';
+import { AdminProductsController } from './admin-products.controller';
+import { CreateProductCommand } from '@application/products/create-product.command';
+import { UpdateProductCommand } from '@application/products/update-product.command';
+import { DeleteProductCommand } from '@application/products/delete-product.command';
+import { GetProductQuery } from '@application/products/get-product.query';
+import { ListAdminProductsQuery } from '@application/products/list-admin-products.query';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  controllers: [ProductsController],
+  imports: [AuthModule],
+  controllers: [ProductsController, AdminProductsController],
   providers: [
     ListProductsQuery,
-    {
-      provide: TOKENS.PRODUCT_REPOSITORY,
-      useClass: PrismaProductRepository,
-    },
-    {
-      provide: TOKENS.PRODUCTS_CACHE,
-      useClass: RedisProductsCache,
-    },
+    ListAdminProductsQuery,
+    CreateProductCommand,
+    UpdateProductCommand,
+    DeleteProductCommand,
+    GetProductQuery,
   ],
-  exports: [TOKENS.PRODUCT_REPOSITORY, TOKENS.PRODUCTS_CACHE],
 })
 export class ProductsModule {}

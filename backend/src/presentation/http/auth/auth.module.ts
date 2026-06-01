@@ -5,6 +5,7 @@ import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
 import { AuthenticateUserCommand } from '@application/auth/authenticate-user.command';
 import { RefreshTokenCommand } from '@application/auth/refresh-token.command';
+import { RegisterUserCommand } from '@application/auth/register-user.command';
 import { TOKENS } from '@shared/tokens';
 import { PrismaUserRepository } from '@infrastructure/auth/prisma-user.repository';
 import { Argon2PasswordHasher } from '@infrastructure/auth/argon2-password-hasher.service';
@@ -29,6 +30,7 @@ import { RolesGuard } from './roles.guard';
   controllers: [AuthController],
   providers: [
     AuthenticateUserCommand,
+    RegisterUserCommand,
     RefreshTokenCommand,
     JwtStrategy,
     JwtAuthGuard,

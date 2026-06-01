@@ -65,6 +65,7 @@ export const SWAGGER_DOCUMENTATION: SwaggerDocConfig = {
 
 export const SWAGGER_TAGS: Record<string, BilingualText> = {
   products: { pt: 'Produtos', en: 'Products' },
+  adminProducts: { pt: 'Produtos (Admin)', en: 'Products (Admin)' },
   checkout: { pt: 'Checkout', en: 'Checkout' },
   orders: { pt: 'Pedidos', en: 'Orders' },
   adminOrders: { pt: 'Pedidos (Admin)', en: 'Orders (Admin)' },
@@ -86,6 +87,58 @@ export const SWAGGER_OPERATIONS: Record<string, Record<string, SwaggerOperationC
       },
     },
   },
+  adminProducts: {
+    list: {
+      summary: {
+        pt: 'Listar produtos para administração',
+        en: 'List products for administration',
+      },
+      description: {
+        pt: 'Retorna todos os produtos com paginação, inclusive inativos, para gestão interna.',
+        en: 'Returns all products with pagination, including inactive ones, for internal management.',
+      },
+    },
+    create: {
+      summary: {
+        pt: 'Cadastrar novo produto',
+        en: 'Create new product',
+      },
+      description: {
+        pt: 'Permite que administradores cadastrem novos produtos com estoque inicial e imagem.',
+        en: 'Allows administrators to register new products with initial stock and imagery.',
+      },
+    },
+    get: {
+      summary: {
+        pt: 'Consultar detalhes do produto',
+        en: 'Fetch product details',
+      },
+      description: {
+        pt: 'Retorna todos os dados de um produto, incluindo status de publicação.',
+        en: 'Returns full product data including publication status.',
+      },
+    },
+    update: {
+      summary: {
+        pt: 'Atualizar produto existente',
+        en: 'Update existing product',
+      },
+      description: {
+        pt: 'Atualiza informações de preço, estoque, imagem e disponibilidade de um produto.',
+        en: 'Updates price, stock, imagery, and availability information for a product.',
+      },
+    },
+    remove: {
+      summary: {
+        pt: 'Desativar produto',
+        en: 'Deactivate product',
+      },
+      description: {
+        pt: 'Desativa o produto mantendo histórico para pedidos anteriores.',
+        en: 'Deactivates the product while preserving historical orders.',
+      },
+    },
+  },
   checkout: {
     create: {
       summary: {
@@ -93,8 +146,8 @@ export const SWAGGER_OPERATIONS: Record<string, Record<string, SwaggerOperationC
         en: 'Create idempotent checkout attempt',
       },
       description: {
-        pt: 'Reserva estoque, registra o pedido e agenda sincronização com o ERP. Requer cabeçalho Idempotency-Key e autenticação de cliente.',
-        en: 'Reserves inventory, registers the order, and schedules ERP synchronization. Requires the Idempotency-Key header and customer authentication.',
+        pt: 'Reserva estoque, registra o pedido e agenda sincronização com o ERP dentro de uma transação ACID. Em caso de falha, estoque, pedido e idempotência são revertidos automaticamente antes de responder. Requer cabeçalho Idempotency-Key e autenticação de cliente.',
+        en: 'Reserves inventory, persists the order, and schedules ERP synchronization inside a single ACID transaction. If anything fails, stock, order data, and idempotency entries roll back automatically before responding. Requires the Idempotency-Key header and customer authentication.',
       },
     },
   },
@@ -123,14 +176,24 @@ export const SWAGGER_OPERATIONS: Record<string, Record<string, SwaggerOperationC
     },
   },
   auth: {
-    login: {
+    register: {
       summary: {
-        pt: 'Autenticar usuário seed',
-        en: 'Authenticate seeded user',
+        pt: 'Registrar novo usuário cliente',
+        en: 'Register new customer user',
       },
       description: {
-        pt: 'Gera tokens de acesso e refresh para usuários cadastrados via seed.',
-        en: 'Generates access and refresh tokens for seeded users.',
+        pt: 'Cria um usuário cliente ativo com senha forte e retorna o par de tokens autenticados.',
+        en: 'Creates an active customer user with a strong password and returns the authenticated token pair.',
+      },
+    },
+    login: {
+      summary: {
+        pt: 'Autenticar usuário registrado',
+        en: 'Authenticate registered user',
+      },
+      description: {
+        pt: 'Gera tokens de acesso e refresh para usuários ativos na plataforma.',
+        en: 'Generates access and refresh tokens for active platform users.',
       },
     },
     refresh: {
@@ -179,6 +242,46 @@ export const SWAGGER_RESPONSES: Record<string, Record<string, SwaggerResponseCon
       },
     },
   },
+  adminProducts: {
+    list: {
+      ok: {
+        pt: 'Produtos listados para administração.',
+        en: 'Products listed for administration.',
+      },
+    },
+    create: {
+      ok: {
+        pt: 'Produto criado com sucesso.',
+        en: 'Product created successfully.',
+      },
+      validation: {
+        pt: 'Dados inválidos ou SKU duplicado.',
+        en: 'Invalid data or duplicate SKU.',
+      },
+    },
+    get: {
+      ok: {
+        pt: 'Produto retornado com sucesso.',
+        en: 'Product returned successfully.',
+      },
+    },
+    update: {
+      ok: {
+        pt: 'Produto atualizado com sucesso.',
+        en: 'Product updated successfully.',
+      },
+      validation: {
+        pt: 'Dados inválidos ou SKU duplicado.',
+        en: 'Invalid data or duplicate SKU.',
+      },
+    },
+    remove: {
+      ok: {
+        pt: 'Produto desativado com sucesso.',
+        en: 'Product deactivated successfully.',
+      },
+    },
+  },
   checkout: {
     create: {
       ok: {
@@ -198,8 +301,8 @@ export const SWAGGER_RESPONSES: Record<string, Record<string, SwaggerResponseCon
         en: 'Invalid or missing input data.',
       },
       unavailable: {
-        pt: 'Falha temporária na sincronização com o ERP.',
-        en: 'Temporary failure while synchronizing with the ERP.',
+        pt: 'Falha temporária na sincronização com o ERP. O estoque e o pedido foram revertidos automaticamente; tente novamente em instantes.',
+        en: 'Temporary failure while synchronizing with the ERP. Stock and order changes were rolled back automatically; please retry shortly.',
       },
       throttled: {
         pt: 'Checkout concorrente em andamento para o mesmo produto.',
@@ -224,6 +327,16 @@ export const SWAGGER_RESPONSES: Record<string, Record<string, SwaggerResponseCon
     },
   },
   auth: {
+    register: {
+      ok: {
+        pt: 'Usuário criado e autenticado com sucesso.',
+        en: 'User registered and authenticated successfully.',
+      },
+      validation: {
+        pt: 'Dados inválidos ou e-mail já utilizado.',
+        en: 'Invalid data or e-mail already in use.',
+      },
+    },
     login: {
       ok: {
         pt: 'Autenticação realizada com sucesso.',

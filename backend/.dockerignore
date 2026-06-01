@@ -6,5 +6,6 @@ tmp
 .turbo
 .next
 .git
-.env*
+envdocker.txt
 npm-debug.log*
+*.tsbuildinfo

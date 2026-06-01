@@ -138,12 +138,12 @@ export function CheckoutForm({ product }: CheckoutFormProps) {
 
   return (
     <section id="checkout" className="space-y-6">
-      <div className="glass-panel space-y-5 rounded-3xl p-6 text-white">
+      <div className="glass-panel space-y-5 rounded-3xl p-6 text-neutral-800 dark:text-slate-200">
         <header className="space-y-2">
-          <h2 className="font-display text-2xl">Checkout resiliente</h2>
-          <p className="text-sm text-white/70">
-            Reservamos estoque de forma atômica, simulamos atrasos do ERP e evitamos pedidos duplicados com chaves de
-            idempotência.
+          <h2 className="font-display text-2xl text-neutral-900 dark:text-slate-100">Checkout resiliente</h2>
+          <p className="text-sm text-neutral-500 dark:text-slate-300">
+            Reservamos estoque de forma transacional, simulamos atrasos do ERP e evitamos pedidos duplicados com chaves
+            de idempotência.
           </p>
         </header>
 
@@ -161,7 +161,12 @@ export function CheckoutForm({ product }: CheckoutFormProps) {
 
             <form onSubmit={onSubmit} className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
-                <Input label="Produto" value={product.name} readOnly className="bg-white/20 text-white" />
+                <Input
+                  label="Produto"
+                  value={product.name}
+                  readOnly
+                  className="cursor-default bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-slate-200"
+                />
                 <Input
                   label="Quantidade"
                   type="number"
@@ -176,9 +181,9 @@ export function CheckoutForm({ product }: CheckoutFormProps) {
                 />
               </div>
 
-              <div className="flex items-center justify-between rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-sm">
+              <div className="flex items-center justify-between rounded-3xl border border-neutral-200 bg-neutral-100 px-4 py-3 text-sm text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800/60 dark:text-slate-300">
                 <span>Total estimado</span>
-                <strong className="font-display text-lg text-brand-secondary">{formatCurrency(total)}</strong>
+                <strong className="font-display text-lg text-brand-primary">{formatCurrency(total)}</strong>
               </div>
 
               <Button

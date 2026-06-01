@@ -1,51 +1,71 @@
 import Image from 'next/image';
+import { useState } from 'react';
 import { Product } from '@/entities/product/model/types';
 import { formatCurrency } from '@/shared/lib/format-currency';
+import { Button } from '@/shared/ui/button';
 
 interface ProductCardProps {
   product: Product;
   onSelect?: (product: Product) => void;
   isSelected?: boolean;
+  onAddToCart?: (product: Product) => void;
 }
 
-export function ProductCard({ product, onSelect, isSelected }: ProductCardProps) {
+export function ProductCard({ product, onSelect, isSelected, onAddToCart }: ProductCardProps) {
+  const [imageError, setImageError] = useState(false);
+  const initials = product.name
+    .split(' ')
+    .slice(0, 2)
+    .map((word) => word.charAt(0).toUpperCase())
+    .join('');
+
   return (
-    <button
-      type="button"
-      onClick={() => onSelect?.(product)}
-      className={`group flex flex-col gap-4 rounded-3xl border p-5 text-left shadow-lg transition ${
-        isSelected
-          ? 'border-brand-primary bg-white/90 shadow-brand-primary/40 dark:bg-white/5'
-          : 'border-white/10 bg-white/70 hover:border-brand-primary/80 dark:bg-white/5'
+    <article
+      className={`group flex flex-col justify-between gap-4 rounded-3xl border border-neutral-200 bg-white/95 p-6 text-left shadow-lg transition hover:-translate-y-1 hover:shadow-xl dark:border-neutral-700 dark:bg-neutral-900/70 dark:shadow-black/40 ${
+        isSelected ? 'ring-2 ring-brand-primary ring-offset-2 ring-offset-white dark:ring-offset-neutral-800' : ''
       }`}
     >
-      <div className="relative h-40 w-full overflow-hidden rounded-2xl bg-gradient-to-br from-brand-primary/20 to-brand-secondary/20">
-        {product.imageUrl ? (
-          <Image
-            fill
-            src={product.imageUrl}
-            alt={product.name}
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-          />
-        ) : null}
-      </div>
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <h3 className="font-display text-lg text-brand-dark dark:text-white">{product.name}</h3>
-          <span className="rounded-full bg-brand-primary/10 px-3 py-1 text-xs text-brand-primary">
-            {product.stock} em estoque
-          </span>
+      <button type="button" onClick={() => onSelect?.(product)} className="flex flex-col gap-4 text-left">
+        <div className="relative h-44 w-full overflow-hidden rounded-2xl bg-gradient-to-br from-brand-primary/15 via-brand-secondary/15 to-brand-primary/15">
+          {product.imageUrl && !imageError ? (
+            <Image
+              fill
+              src={product.imageUrl}
+              alt={product.name}
+              className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-primary/30 to-brand-secondary/40 text-3xl font-semibold text-white">
+              {initials || 'CC'}
+            </div>
+          )}
         </div>
-        <p className="text-sm text-brand-dark/70 dark:text-white/60">{product.description}</p>
-        <div className="flex items-center justify-between pt-2">
-          <strong className="font-display text-xl text-brand-primary">
-            {formatCurrency(product.priceCents / 100)}
-          </strong>
-          <span className="text-xs uppercase tracking-wide text-brand-dark/50 dark:text-white/50">
-            SKU {product.sku}
-          </span>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h3 className="font-display text-lg text-neutral-900 dark:text-slate-100">{product.name}</h3>
+            <span className="rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-semibold text-brand-primary dark:bg-brand-primary/20 dark:text-brand-primary/90">
+              {product.stock} em estoque
+            </span>
+          </div>
+          <p className="text-sm text-neutral-600 dark:text-slate-300">{product.description}</p>
+          <div className="flex items-center justify-between pt-2">
+            <strong className="font-display text-2xl text-brand-primary">
+              {formatCurrency(product.priceCents / 100)}
+            </strong>
+            <span className="text-xs uppercase tracking-wide text-neutral-400 dark:text-slate-400">SKU {product.sku}</span>
+          </div>
         </div>
-      </div>
-    </button>
+      </button>
+
+      <Button
+        type="button"
+        variant="primary"
+        className="w-full"
+        onClick={() => onAddToCart?.(product)}
+      >
+        Adicionar ao carrinho
+      </Button>
+    </article>
   );
 }

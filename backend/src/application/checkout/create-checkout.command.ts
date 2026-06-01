@@ -14,6 +14,7 @@ import { TOKENS } from '@shared/tokens';
 import { EnqueueErpSyncCommand } from './enqueue-erp-sync.command';
 import { CHECKOUT_MESSAGES } from './checkout.messages';
 import { inline } from '@shared/i18n/bilingual';
+import { PrismaService } from '@infrastructure/prisma/prisma.service';
 
 export enum CheckoutResponseStatus {
   SUCCESS = 'SUCCESS',
@@ -56,6 +57,7 @@ export class CreateCheckoutCommand {
     private readonly logger: AppLogger,
     @Inject(TOKENS.TELEMETRY)
     private readonly telemetry: TelemetryService,
+    private readonly prisma: PrismaService,
     private readonly enqueueErpSync: EnqueueErpSyncCommand,
     private readonly configService: ConfigService,
   ) {
@@ -95,57 +97,89 @@ export class CreateCheckoutCommand {
       throw new ConflictError(inline(CHECKOUT_MESSAGES.lockConflict));
     }
 
+    let reservedProductId: string | null = null;
+    let order: Order | null = null;
+    let orderPersisted = false;
+
     try {
-      const product = await this.productRepository.findById(input.productId);
-      if (!product || !product.isActive) {
-        throw new NotFoundError(inline(CHECKOUT_MESSAGES.productNotFound));
-      }
-
-      let reservedProduct;
-      try {
-        reservedProduct = await this.productRepository.reserveStock(product.id, input.quantity);
-      } catch (error) {
-        if ((error as Error).message !== 'Insufficient stock') {
-          throw error;
-        }
-        this.logger.warn('Insufficient stock during checkout', {
-          productId: product.id,
-          quantity: input.quantity,
+      const transactionResult = await this.prisma.$transaction(async (tx) => {
+        const productRecord = await tx.product.findUnique({
+          where: { id: input.productId },
         });
-        const response: CheckoutResponseDto = {
-          status: CheckoutResponseStatus.INSUFFICIENT_STOCK,
-          message: inline(CHECKOUT_MESSAGES.insufficientStock),
-        };
-        await this.idempotencyStore.set(input.idempotencyKey, response, this.idempotencyTtlSeconds);
-        this.telemetry.incrementCounter('checkout_total', { labels: { status: 'insufficient' } });
-        closeSpan();
-        return response;
-      }
 
-      const orderItem = OrderItem.create({
-        productId: reservedProduct.id,
-        productName: reservedProduct.name,
-        quantity: input.quantity,
-        priceCents: reservedProduct.priceCents,
+        if (!productRecord || !productRecord.isActive) {
+          throw new NotFoundError(inline(CHECKOUT_MESSAGES.productNotFound));
+        }
+
+        const decremented = await tx.product.updateMany({
+          where: {
+            id: productRecord.id,
+            stock: { gte: input.quantity },
+            isActive: true,
+          },
+          data: {
+            stock: {
+              decrement: input.quantity,
+            },
+          },
+        });
+
+        if (!decremented.count) {
+          throw new InsufficientStockError();
+        }
+
+        const orderItem = OrderItem.create({
+          productId: productRecord.id,
+          productName: productRecord.name,
+          quantity: input.quantity,
+          priceCents: productRecord.priceCents,
+        });
+
+        const pendingOrder = Order.create({
+          customerId: input.customerId,
+          idempotencyKey: input.idempotencyKey,
+          items: [orderItem],
+          status: OrderStatus.PENDING,
+          totalCents: orderItem.totalCents,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+
+        await tx.order.create({
+          data: {
+            id: pendingOrder.id,
+            customerId: pendingOrder.customerId,
+            status: pendingOrder.status,
+            totalCents: pendingOrder.totalCents,
+            idempotencyKey: pendingOrder.idempotencyKey,
+            failureReason: pendingOrder.failureReason ?? null,
+            createdAt: pendingOrder.createdAt,
+            updatedAt: pendingOrder.updatedAt,
+            items: {
+              create: pendingOrder.items.map((item) => ({
+                id: item.id,
+                productId: item.productId,
+                productName: item.productName,
+                quantity: item.quantity,
+                priceCents: item.priceCents,
+              })),
+            },
+          },
+        });
+
+        return { pendingOrder, productRecord };
       });
 
-      const order = Order.create({
-        customerId: input.customerId,
-        idempotencyKey: input.idempotencyKey,
-        items: [orderItem],
-        status: OrderStatus.PENDING,
-        totalCents: orderItem.totalCents,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+      reservedProductId = transactionResult.productRecord.id;
+      order = transactionResult.pendingOrder;
+      orderPersisted = true;
 
-      await this.orderRepository.save(order);
       order.markProcessing();
       await this.orderRepository.update(order);
 
       await this.enqueueErpSync.execute({
         orderId: order.id,
-        productId: product.id,
+        productId: transactionResult.productRecord.id,
         quantity: input.quantity,
         customerId: order.customerId,
         idempotencyKey: input.idempotencyKey,
@@ -161,6 +195,63 @@ export class CreateCheckoutCommand {
       this.telemetry.incrementCounter('checkout_total', { labels: { status: 'queued' } });
       closeSpan();
       return response;
+    } catch (error) {
+      if (error instanceof InsufficientStockError) {
+        this.logger.warn('Insufficient stock during checkout', {
+          productId: input.productId,
+          quantity: input.quantity,
+        });
+        const response: CheckoutResponseDto = {
+          status: CheckoutResponseStatus.INSUFFICIENT_STOCK,
+          message: inline(CHECKOUT_MESSAGES.insufficientStock),
+        };
+        await this.idempotencyStore.set(input.idempotencyKey, response, this.idempotencyTtlSeconds);
+        this.telemetry.incrementCounter('checkout_total', { labels: { status: 'insufficient' } });
+        closeSpan();
+        return response;
+      }
+
+      if (error instanceof ValidationError || error instanceof NotFoundError || error instanceof ConflictError) {
+        throw error;
+      }
+      this.logger.error('Checkout failed during persistence', {
+        idempotencyKey: input.idempotencyKey,
+        productId: input.productId,
+        error,
+      });
+
+      if (reservedProductId) {
+        try {
+          await this.productRepository.releaseStock(reservedProductId, input.quantity);
+        } catch (releaseError) {
+          this.logger.error('Failed to rollback reserved stock', {
+            productId: reservedProductId,
+            error: releaseError,
+          });
+        }
+      }
+
+      if (order && orderPersisted) {
+        try {
+          order.markFailure(inline(CHECKOUT_MESSAGES.unexpectedError));
+          await this.orderRepository.update(order);
+        } catch (updateError) {
+          this.logger.error('Failed to mark order as failed after persistence error', {
+            orderId: order.id,
+            error: updateError,
+          });
+        }
+      }
+
+      const failureResponse: CheckoutResponseDto = {
+        status: CheckoutResponseStatus.TECHNICAL_FAILURE,
+        message: inline(CHECKOUT_MESSAGES.unexpectedError),
+      };
+
+      await this.idempotencyStore.set(input.idempotencyKey, failureResponse, this.idempotencyTtlSeconds);
+      this.telemetry.incrementCounter('checkout_total', { labels: { status: 'failure' } });
+      closeSpan();
+      return failureResponse;
     } finally {
       await this.lockManager.release(lockKey);
       closeSpan();
@@ -182,3 +273,5 @@ export class CreateCheckoutCommand {
     }
   }
 }
+
+class InsufficientStockError extends Error {}

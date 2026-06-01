@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { existsSync } from 'fs';
+import { join } from 'path';
 import { ThrottlerModule } from '@nestjs/throttler';
 import configuration from '../config/configuration';
 import { configValidationSchema } from '@config/validation';
@@ -17,6 +19,16 @@ import { MetricsModule } from './http/metrics/metrics.module';
 import { RateLimitGuard } from './http/common/rate-limit.guard';
 import { LoggerInterceptor } from './http/logger/logger.interceptor';
 import { DomainExceptionFilter } from './http/common/domain-exception.filter';
+import { CoreProvidersModule } from '@infrastructure/core/core-providers.module';
+
+const envFilePathCandidates = [
+  join(__dirname, '../../.env.local'),
+  join(__dirname, '../../.env'),
+  join(__dirname, '../../../.env.local'),
+  join(__dirname, '../../../.env'),
+];
+
+const envFilePaths = envFilePathCandidates.filter((filePath) => existsSync(filePath));
 
 @Module({
   imports: [
@@ -24,6 +36,8 @@ import { DomainExceptionFilter } from './http/common/domain-exception.filter';
       isGlobal: true,
       load: [configuration],
       validationSchema: configValidationSchema,
+      envFilePath: envFilePaths.length > 0 ? envFilePaths : undefined,
+      expandVariables: true,
     }),
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
@@ -39,6 +53,7 @@ import { DomainExceptionFilter } from './http/common/domain-exception.filter';
     }),
     PrismaModule,
     RedisModule,
+    CoreProvidersModule,
     AuthModule,
     ProductsModule,
     CheckoutModule,

@@ -167,7 +167,7 @@ describe('App e2e', () => {
       data: {
         id: customerId,
         email: 'customer@test.com',
-        passwordHash: await argon2.hash('customer123'),
+        passwordHash: await argon2.hash('Cliente12345@'),
         role: 'CUSTOMER',
       },
     });
@@ -193,7 +193,7 @@ describe('App e2e', () => {
   it('executa fluxo de login e checkout', async () => {
     const loginResponse = await request(app.getHttpServer())
       .post('/api/v1/auth/login')
-      .send({ email: 'customer@test.com', password: 'customer123' })
+      .send({ email: 'customer@test.com', password: 'Cliente12345@' })
       .expect(200);
 
     const { accessToken } = loginResponse.body;

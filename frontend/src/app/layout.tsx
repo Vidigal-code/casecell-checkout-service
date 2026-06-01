@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" className={`${spaceGrotesk.variable} ${workSans.variable}`}>
-      <body className="bg-grid-pattern bg-orb-gradient">
+      <body>
         <Providers>
           <div className="flex min-h-screen flex-col">
             <Header />

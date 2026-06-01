@@ -4,6 +4,7 @@ export interface ProductQueryParams {
   page: number;
   pageSize: number;
   search?: string;
+  includeInactive?: boolean;
 }
 
 export interface PaginatedProducts {

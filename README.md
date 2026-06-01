@@ -117,16 +117,19 @@ flowchart LR
 - Idempotência com Redis e locks distribuídos para evitar overselling.
 - Queue BullMQ, circuit breaker distribuído e simulador de ERP com latência configurável.
 - Observabilidade: Pino estruturado, métricas Prometheus, spans OpenTelemetry.
-- Frontend FSD com Tailwind, Framer Motion e proteção contra cliques múltiplos.
-- Painel `/admin` para operadores acompanharem status dos pedidos.
+- Frontend FSD em modos claro/escuro com Tailwind e Framer Motion, páginas dedicadas de login/registro, carrinho persistido com fallback visual e checkout resiliente.
+- Checkout executa em transação ACID com rollback automático de estoque e pedido ao detectar falhas.
+- Painel `/admin` unifica acompanhamento de pedidos e CRUD completo de produtos com RBAC.
 
 ### Guia de Execução Rápida
 - Pré-requisitos: Node.js 20+, npm 9+, Docker + Docker Compose.
-- Configuração de variáveis:
+- Um único arquivo `.env` na raiz governa backend e frontend; o compose injeta os mesmos valores dentro dos containers.
+- Configuração de variáveis (arquivo único compartilhado):
   ```bash
-  cp backend/.env.example backend/.env
-  cp frontend/.env.example frontend/.env.local
+  cp envexample.txt .env
   ```
+  Ajuste `NEXT_PUBLIC_API_BASE_URL` para `/api/v1` (chamadas relativas ao host) e mantenha `INTERNAL_API_BASE_URL=http://localhost:3001` para o roteamento interno. Ao usar Docker, utilize `DOCKER_NEXT_PUBLIC_API_BASE_URL=/api/v1`, `DOCKER_INTERNAL_API_BASE_URL=http://backend:3001` e `DOCKER_NEXT_PUBLIC_DEFAULT_THEME=light` — o compose já fornece esses valores. Backend e frontend consomem automaticamente esse `.env` (Docker, Prisma e Next.js).
+  O arquivo `frontend/.env.docker` acompanha esses mesmos valores para o container de UI.
 - Backend (modo dev):
   ```bash
   cd backend
@@ -164,11 +167,12 @@ flowchart LR
 | Frontend e2e | `npm run test:e2e` |
 
 ### Fluxos Principais
-1. Listagem de produtos com paginação, busca e skeletons.
-2. Autenticação seed (admin/customer) com refresh tokens persistidos.
-3. Checkout idempotente com respostas distintas para sucesso, validação, estoque, falha técnica e duplicidade.
-4. Consulta de pedidos com status dinâmico (`PENDING`, `PROCESSING`, `SUCCESS`, `FAILED`).
-5. Painel administrativo `/admin` com filtros por status e visão detalhada dos itens.
+1. Listagem e busca de produtos com paginação, skeletons e fallback de imagem.
+2. Registro com senha forte e login persistido (tokens + refresh) para clientes e administradores.
+3. Carrinho persistido no Redux com ajuste de quantidades, validação de estoque e resumo financeiro.
+4. Checkout idempotente com respostas distintas para sucesso, validação, estoque, falha técnica e duplicidade.
+5. Consulta de pedidos com status dinâmico (`PENDING`, `PROCESSING`, `SUCCESS`, `FAILED`).
+6. Painel administrativo `/admin` com filtros, visão detalhada dos itens e CRUD completo de produtos.
 
 ### Observabilidade & Resiliência
 - Logs estruturados (Pino + rotating-file-stream) com contexto por requisição.
@@ -242,16 +246,19 @@ flowchart LR
 - Redis-backed idempotency and distributed locks keep inventory consistent.
 - BullMQ queue, distributed circuit breaker, and configurable ERP simulator.
 - Observability: structured Pino logs, Prometheus metrics, OpenTelemetry spans.
-- FSD-inspired frontend with Tailwind, Framer Motion, and guarded actions.
-- `/admin` dashboard for operators to track orders and failure reasons.
+- Dual-theme (light/dark) FSD frontend with Tailwind/Framer Motion, dedicated login/register pages, persistent cart with image fallbacks, and resilient checkout UX.
+- Checkout runs inside an ACID transaction with automatic rollback of stock and order data on failure.
+- `/admin` dashboard consolidates order tracking and full product CRUD under RBAC.
 
 ### Quick Start
 - Requirements: Node.js 20+, npm 9+, Docker + Docker Compose.
-- Environment setup:
+- A single root `.env` drives both backend and frontend; Docker compose reuses the same values inside the containers.
+- Environment setup (single shared file):
   ```bash
-  cp backend/.env.example backend/.env
-  cp frontend/.env.example frontend/.env.local
+  cp envexample.txt .env
   ```
+  Set `NEXT_PUBLIC_API_BASE_URL` to `/api/v1` (host-relative) and keep `INTERNAL_API_BASE_URL=http://localhost:3001` for server-side routing. When running Docker, rely on `DOCKER_NEXT_PUBLIC_API_BASE_URL=/api/v1`, `DOCKER_INTERNAL_API_BASE_URL=http://backend:3001`, and `DOCKER_NEXT_PUBLIC_DEFAULT_THEME=light`—the compose file already provides those defaults. Backend and frontend automatically load this `.env` (Docker, Prisma and Next.js).
+  The repository ships with `frontend/.env.docker`, mirroring these values so browsers always call `http://localhost:3001` while the container reaches the backend via `backend:3001`.
 - Backend (dev mode):
   ```bash
   cd backend
@@ -289,11 +296,12 @@ flowchart LR
 | Frontend – e2e | `npm run test:e2e`
 
 ### Core Flows
-1. Product catalog with pagination, search and skeleton loading states.
-2. Seed authentication (admin/customer) with persisted refresh tokens.
-3. Checkout with transactional reservations, idempotent responses and detailed messaging.
-4. Order tracking with live statuses (`PENDING`, `PROCESSING`, `SUCCESS`, `FAILED`).
-5. Operator dashboard `/admin` featuring status filters and item breakdowns.
+1. Product catalog with pagination, search, skeleton states, and graceful image fallbacks.
+2. Strong-password registration and persisted login (admin/customer) with refresh tokens.
+3. Persistent cart with quantity controls, stock validation, and financial summary.
+4. Checkout with transactional reservations, idempotent responses, and detailed messaging for each outcome.
+5. Order tracking with live statuses (`PENDING`, `PROCESSING`, `SUCCESS`, `FAILED`).
+6. Operator dashboard `/admin` featuring status filters, detailed item breakdowns, and full product CRUD.
 
 ### Observability & Resilience
 - Structured logging (Pino + rotating-file-stream) with per-request context.

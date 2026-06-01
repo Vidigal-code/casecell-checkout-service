@@ -5,9 +5,9 @@ const prisma = new PrismaClient();
 
 async function main() {
   const adminEmail = process.env.ADMIN_EMAIL ?? 'admin@casecell.shop';
-  const adminPassword = process.env.ADMIN_PASSWORD ?? 'admin123';
+  const adminPassword = process.env.ADMIN_PASSWORD ?? 'Admin12345@';
   const customerEmail = process.env.CUSTOMER_EMAIL ?? 'customer@casecell.shop';
-  const customerPassword = process.env.CUSTOMER_PASSWORD ?? 'customer123';
+  const customerPassword = process.env.CUSTOMER_PASSWORD ?? 'Cliente12345@';
 
   await prisma.user.upsert({
     where: { email: adminEmail },

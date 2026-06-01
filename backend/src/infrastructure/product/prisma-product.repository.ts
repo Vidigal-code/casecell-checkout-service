@@ -26,7 +26,8 @@ export class PrismaProductRepository implements ProductRepository {
   async findAll(params: ProductQueryParams): Promise<PaginatedProducts> {
     const page = Math.max(params.page, 1);
     const pageSize = Math.min(Math.max(params.pageSize, 1), 50);
-    const where = params.search
+
+    const searchWhere = params.search
       ? {
           OR: [
             { name: { contains: params.search, mode: Prisma.QueryMode.insensitive } },
@@ -35,6 +36,13 @@ export class PrismaProductRepository implements ProductRepository {
           ],
         }
       : {};
+
+    const where = params.includeInactive
+      ? searchWhere
+      : {
+          ...searchWhere,
+          isActive: true,
+        };
 
     const [data, total] = await Promise.all([
       this.prisma.product.findMany({

@@ -22,9 +22,11 @@ API NestJS responsável por catálogo, checkout resiliente e sincronia assíncro
 ### Arquitetura Atual
 - `ProductsModule`: leitura de catálogo com cache Redis e paginação.
 - `CheckoutModule`: casos de uso com reservas, locks, idempotência e enfileiramento BullMQ.
+  - Operações de checkout executam transação ACID: falhas realizam rollback automático de estoque e pedido.
 - `OrdersModule`: consulta de status por clientes.
 - `AdminOrdersModule`: listagem administrativa com filtros.
-- `AuthModule`: login/refresh para usuários seed (admin e customer).
+- `AdminProductsModule`: CRUD completo de produtos com RBAC e validação forte.
+- `AuthModule`: registro/login/refresh com reforço de senha forte (admin e customer).
 - `HealthModule` / `MetricsModule`: monitoramento (Prometheus, health check).
 - `ErpSyncQueueModule`: worker BullMQ que processa o `ERP Simulator` com circuit breaker.
 
@@ -45,8 +47,9 @@ API NestJS responsável por catálogo, checkout resiliente e sincronia assíncro
 - Redis 7
 
 ### Configuração de Ambiente
-1. `cp .env.example .env`
-2. Principais variáveis:
+1. Garanta o `.env` na raiz do monorepo (`cp ../envexample.txt ../.env` ou `cp ../.env.example ../.env`). Esse mesmo arquivo é compartilhado com o frontend e replicado para os containers via Docker Compose.
+2. (Opcional) Use um `.env` local nesta pasta para sobrepor valores específicos.
+3. Principais variáveis:
    - `DATABASE_URL`: string de conexão PostgreSQL.
    - `REDIS_HOST` / `REDIS_PORT`: instância Redis utilizada para cache, locks e idempotência.
    - `JWT_*`: segredos e expirações dos tokens.
@@ -109,9 +112,11 @@ npm run start:dev
 ### Current Architecture
 - `ProductsModule`: catalog reads with Redis cache and pagination.
 - `CheckoutModule`: use cases handling reservations, locks, idempotency, and BullMQ scheduling.
+  - Checkout runs inside an ACID transaction so stock and order data roll back automatically on failure.
 - `OrdersModule`: status lookup for customers.
 - `AdminOrdersModule`: administrative order listing with filter support.
-- `AuthModule`: login/refresh flows for seeded users (admin/customer).
+- `AdminProductsModule`: full product CRUD with RBAC and strong validation.
+- `AuthModule`: registration/login/refresh flows enforcing strong passwords for admin/customer roles.
 - `HealthModule` / `MetricsModule`: monitoring endpoints (Prometheus, health check).
 - `ErpSyncQueueModule`: BullMQ worker that coordinates the `ERP Simulator` behind a circuit breaker.
 
@@ -132,8 +137,9 @@ npm run start:dev
 - Redis 7
 
 ### Environment Setup
-1. `cp .env.example .env`
-2. Key variables:
+1. Ensure the repository root `.env` exists (`cp ../envexample.txt ../.env` or `cp ../.env.example ../.env`). The same file is shared with the frontend and injected into containers by Docker Compose.
+2. (Optional) Add a local `.env` here if you need service-specific overrides.
+3. Key variables:
    - `DATABASE_URL`: PostgreSQL connection string.
    - `REDIS_HOST` / `REDIS_PORT`: Redis instance for caching, locks, idempotency.
    - `JWT_*`: token secrets and expirations.

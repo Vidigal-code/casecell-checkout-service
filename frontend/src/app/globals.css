@@ -7,30 +7,30 @@
 }
 
 body {
-  @apply font-body bg-brand-light text-brand-dark dark:bg-brand-dark dark:text-brand-light;
-  background-image: var(--page-background, none);
-  min-height: 100vh;
+  @apply font-body min-h-screen text-neutral-800 transition-colors duration-300 ease-out;
+  background-color: #f6f7fb;
+  background-image: radial-gradient(circle at top right, rgba(255, 95, 109, 0.08), transparent 45%),
+    radial-gradient(circle at bottom left, rgba(255, 195, 113, 0.12), transparent 50%);
 }
 
-.bg-orb-gradient {
-  background-image: radial-gradient(circle at 10% 10%, rgba(255, 95, 109, 0.25), transparent 55%),
-    radial-gradient(circle at 90% 20%, rgba(255, 195, 113, 0.25), transparent 60%),
-    radial-gradient(circle at 50% 80%, rgba(56, 182, 255, 0.25), transparent 65%);
-}
-
-.bg-grid-pattern {
-  background-image: linear-gradient(
-      rgba(255, 255, 255, 0.03) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.03) 1px,
-      transparent 1px
-    );
-  background-size: 32px 32px;
+.dark body {
+  @apply text-slate-100;
+  background-color: #0f1115;
+  background-image: radial-gradient(circle at top left, rgba(255, 95, 109, 0.18), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(33, 150, 243, 0.16), transparent 60%);
 }
 
 .glass-panel {
-  @apply bg-white/70 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-lg;
+  @apply bg-white/90 backdrop-blur-xl border border-neutral-200 shadow-lg dark:bg-neutral-900/60 dark:border-neutral-700 dark:shadow-black/40;
+}
+
+.bg-grid-soft {
+  background-image: linear-gradient(rgba(28, 31, 36, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(28, 31, 36, 0.08) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.dark .bg-grid-soft {
+  background-image: linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
 }
