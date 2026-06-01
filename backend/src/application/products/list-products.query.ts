@@ -43,7 +43,7 @@ export class ListProductsQuery {
   private async safeCacheGet(params: ListProductsInput): Promise<PaginatedProductsDto | null> {
     try {
       return await this.cache.get(params);
-    } catch (error) {
+    } catch {
       // Intentionally swallow cache errors to keep product listing available
       return null;
     }
@@ -52,7 +52,7 @@ export class ListProductsQuery {
   private async safeCacheSet(params: ListProductsInput, data: PaginatedProductsDto): Promise<void> {
     try {
       await this.cache.set(params, data);
-    } catch (error) {
+    } catch {
       // Ignore cache persistence issues so users still receive the fresh data
     }
   }

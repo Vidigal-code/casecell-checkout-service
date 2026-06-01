@@ -2,13 +2,6 @@ import { BilingualText } from '@shared/i18n/bilingual';
 
 type LocaleKey = 'pt' | 'en';
 
-interface SwaggerLocaleConfig {
-  route: string;
-  jsonRoute: string;
-  title: string;
-  description: string;
-}
-
 interface SwaggerLocaleContent {
   title: BilingualText;
   description: BilingualText;

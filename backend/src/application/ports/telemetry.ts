@@ -9,5 +9,5 @@ export interface TelemetryDurationOptions extends TelemetryCounterOptions {
 export interface TelemetryService {
   incrementCounter(name: string, options?: TelemetryCounterOptions): void;
   observeDuration(name: string, options: TelemetryDurationOptions): void;
-  startSpan(name: string, attributes?: Record<string, unknown>): () => void;
+  startSpan(name: string, attributes?: Record<string, string | number | boolean>): () => void;
 }

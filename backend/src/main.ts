@@ -2,7 +2,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import helmet from 'helmet';
+import helmet, { HelmetOptions } from 'helmet';
 import { AppModule } from '@presentation/app.module';
 import { setupSwaggerDocs } from '@presentation/http/docs/swagger.setup';
 
@@ -45,33 +45,34 @@ function configureSecurity(app: INestApplication, configService: ConfigService) 
 
   app.enableCors(createCorsOptions(configService));
 
-  app.use(
-    helmet({
-      contentSecurityPolicy: false,
-      crossOriginEmbedderPolicy: false,
-    }),
-  );
+  const helmetOptions: Partial<HelmetOptions> = {
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+  };
 
   const referrerPolicy = configService.get<string>(
     'security.headers.referrerPolicy',
     'no-referrer',
   );
   if (referrerPolicy) {
-    app.use(helmet.referrerPolicy({ policy: referrerPolicy as any }));
+    type ReferrerPolicyConfig = Extract<HelmetOptions['referrerPolicy'], { policy: unknown }>;
+    helmetOptions.referrerPolicy = {
+      policy: referrerPolicy as ReferrerPolicyConfig['policy'],
+    };
   }
 
   const nodeEnv = configService.get<string>('nodeEnv', 'development');
   const headersConfig = configService.get<SecurityHeadersConfig['hsts']>('security.headers.hsts');
 
   if (nodeEnv === 'production' && headersConfig) {
-    app.use(
-      helmet.hsts({
-        maxAge: headersConfig.maxAge,
-        includeSubDomains: headersConfig.includeSubDomains,
-        preload: headersConfig.preload,
-      }),
-    );
+    helmetOptions.hsts = {
+      maxAge: headersConfig.maxAge,
+      includeSubDomains: headersConfig.includeSubDomains,
+      preload: headersConfig.preload,
+    };
   }
+
+  app.use(helmet(helmetOptions as HelmetOptions));
 }
 
 function configureGlobalPipes(app: INestApplication) {

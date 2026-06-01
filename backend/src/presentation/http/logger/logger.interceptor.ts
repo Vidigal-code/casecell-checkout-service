@@ -10,15 +10,18 @@ import { TOKENS } from '@shared/tokens';
 export class LoggerInterceptor implements NestInterceptor {
   constructor(@Inject(TOKENS.LOGGER) private readonly logger: AppLogger) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const httpContext = context.switchToHttp();
     const request = httpContext.getRequest<Request & { id?: string }>();
     const response = httpContext.getResponse<Response>();
-    const requestId = request.headers['x-request-id'] ?? randomUUID();
+    const requestIdHeader = request.headers['x-request-id'];
+    const requestId = Array.isArray(requestIdHeader)
+      ? requestIdHeader[0]
+      : (requestIdHeader ?? randomUUID());
     const start = Date.now();
 
-    request.id = requestId as string;
-    response.setHeader('x-request-id', requestId as string);
+    request.id = requestId;
+    response.setHeader('x-request-id', requestId);
 
     this.logger.info('HTTP request received', {
       requestId,
@@ -39,15 +42,16 @@ export class LoggerInterceptor implements NestInterceptor {
             duration,
           });
         },
-        error: (error: Error) => {
+        error: (error: unknown) => {
           const duration = Date.now() - start;
+          const normalizedError = error instanceof Error ? error.message : String(error);
           this.logger.error('HTTP request failed', {
             requestId,
             method: request.method,
             url: request.url,
             statusCode: response.statusCode,
             duration,
-            error: error.message,
+            error: normalizedError,
           });
         },
       }),

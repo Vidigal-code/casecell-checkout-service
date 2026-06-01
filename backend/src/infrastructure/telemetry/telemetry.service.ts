@@ -58,11 +58,11 @@ export class TelemetryServiceImpl implements TelemetryService {
     }
   }
 
-  startSpan(name: string, attributes?: Record<string, unknown>): () => void {
+  startSpan(name: string, attributes?: Record<string, string | number | boolean>): () => void {
     const tracer = trace.getTracer('casecell');
     const span = tracer.startSpan(name, undefined, context.active());
     if (attributes) {
-      Object.entries(attributes).forEach(([key, value]) => span.setAttribute(key, value as any));
+      Object.entries(attributes).forEach(([key, value]) => span.setAttribute(key, value));
     }
     return () => span.end();
   }

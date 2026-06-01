@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
-import pino, { Logger, LoggerOptions } from 'pino';
+import pinoLogger from 'pino';
+import type { Logger, LoggerOptions } from 'pino';
 import { AppLogger } from '@application/ports/logger';
 
 @Injectable()
@@ -11,7 +12,7 @@ export class PinoLoggerService implements AppLogger {
   constructor() {
     const logLevel = this.resolveLogLevel();
     const options = this.resolveLoggerOptions(logLevel);
-    this.logger = pino(options);
+    this.logger = pinoLogger(options);
   }
 
   debug(message: string, meta?: Record<string, unknown>): void {

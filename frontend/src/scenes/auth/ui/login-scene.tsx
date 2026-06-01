@@ -1,6 +1,33 @@
-import { LoginForm } from '@/features/auth/ui/login-form';
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { LoginForm } from "@/features/auth/ui/login-form";
+import { useAppSelector } from "@/shared/store/hooks";
+import {
+  selectAuthUser,
+  selectIsAuthenticated,
+} from "@/features/auth/model/selectors";
+import { routes } from "@/shared/config/routes";
 
 export function LoginScene() {
+  const router = useRouter();
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const user = useAppSelector(selectAuthUser);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    const destination = user?.role === "ADMIN" ? routes.admin : routes.home;
+    router.replace(destination);
+  }, [isAuthenticated, router, user]);
+
+  if (isAuthenticated) {
+    return null;
+  }
+
   return (
     <section className="relative flex min-h-[calc(100vh-var(--header-height))] items-center justify-center bg-gradient-to-br from-brand-light via-white to-brand-light/60 px-6 py-16 transition-colors dark:from-[#0f1115] dark:via-[#11151c] dark:to-[#0f1115]">
       <div className="absolute inset-0 -z-10 bg-grid-soft" />
@@ -13,7 +40,8 @@ export function LoginScene() {
             Bem-vindo de volta à CaseCellShop
           </h1>
           <p className="text-lg text-neutral-600 dark:text-slate-300">
-            Acesse sua conta para continuar testando o checkout resiliente, gerenciar o carrinho e acompanhar pedidos em tempo real.
+            Acesse sua conta para continuar testando o checkout resiliente,
+            gerenciar o carrinho e acompanhar pedidos em tempo real.
           </p>
           <ul className="grid gap-3 text-sm text-neutral-600 dark:text-slate-300">
             <li className="rounded-2xl border border-neutral-200 bg-white/90 px-4 py-3 shadow-sm dark:border-neutral-700 dark:bg-neutral-900/60">

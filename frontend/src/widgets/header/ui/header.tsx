@@ -1,28 +1,49 @@
 "use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import type { Route } from 'next';
-import { Menu, X, ShoppingBag } from 'lucide-react';
-import { AuthMenu } from '@/features/auth/ui/auth-menu';
-import { ThemeToggle } from '@/features/theme/ui/theme-toggle';
-import { motion, AnimatePresence } from 'framer-motion';
-import { routes } from '@/shared/config/routes';
-
-const navItems: Array<{ href: Route; label: string }> = [
-  { href: routes.home, label: 'Vitrine' },
-  { href: routes.cart, label: 'Carrinho' },
-  { href: routes.login, label: 'Login' },
-  { href: routes.register, label: 'Cadastro' },
-];
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import type { Route } from "next";
+import { Menu, X, ShoppingBag } from "lucide-react";
+import { AuthMenu } from "@/features/auth/ui/auth-menu";
+import { ThemeToggle } from "@/features/theme/ui/theme-toggle";
+import { motion, AnimatePresence } from "framer-motion";
+import { routes } from "@/shared/config/routes";
+import { useAppSelector } from "@/shared/store/hooks";
+import {
+  selectAuthUser,
+  selectIsAuthenticated,
+} from "@/features/auth/model/selectors";
 
 export function Header() {
   const [isMenuOpen, setMenuOpen] = useState(false);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const user = useAppSelector(selectAuthUser);
+
+  const navItems = useMemo<Array<{ href: Route; label: string }>>(() => {
+    const items: Array<{ href: Route; label: string }> = [
+      { href: routes.home, label: "Vitrine" },
+      { href: routes.cart, label: "Carrinho" },
+    ];
+
+    if (!isAuthenticated) {
+      items.push(
+        { href: routes.login, label: "Login" },
+        { href: routes.register, label: "Cadastro" },
+      );
+    } else if (user?.role === "ADMIN") {
+      items.push({ href: routes.admin, label: "Painel" });
+    }
+
+    return items;
+  }, [isAuthenticated, user]);
 
   return (
     <header className="fixed left-0 right-0 top-0 z-50 border-b border-neutral-200 bg-white/90 backdrop-blur transition-colors dark:border-neutral-800 dark:bg-neutral-900/80">
       <div className="mx-auto flex h-[var(--header-height)] w-full max-w-6xl items-center justify-between px-6">
-        <Link href={routes.home} className="flex items-center gap-2 font-display text-xl text-neutral-900 dark:text-slate-100">
+        <Link
+          href={routes.home}
+          className="flex items-center gap-2 font-display text-xl text-neutral-900 dark:text-slate-100"
+        >
           <span className="rounded-full bg-gradient-to-br from-brand-primary to-brand-secondary p-2 text-white shadow">
             <ShoppingBag className="h-5 w-5" />
           </span>
@@ -52,7 +73,11 @@ export function Header() {
           className="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 text-neutral-600 transition dark:border-neutral-700 dark:text-slate-200 md:hidden"
           onClick={() => setMenuOpen((prev) => !prev)}
         >
-          {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {isMenuOpen ? (
+            <X className="h-5 w-5" />
+          ) : (
+            <Menu className="h-5 w-5" />
+          )}
         </button>
       </div>
 
@@ -60,7 +85,7 @@ export function Header() {
         {isMenuOpen ? (
           <motion.nav
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden"
           >
