@@ -1,9 +1,9 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { ListOrdersInput } from '@application/orders/list-orders.query';
 import { OrderStatus } from '@domain/order/order-status.enum';
 import { inline } from '@shared/i18n/bilingual';
+import { toInt } from '@shared/validation/transformers';
 
 export class AdminListOrdersQueryDto implements ListOrdersInput {
   @ApiPropertyOptional({
@@ -17,7 +17,7 @@ export class AdminListOrdersQueryDto implements ListOrdersInput {
   @IsInt()
   @Min(1)
   @IsOptional()
-  @Type(() => Number)
+  @toInt()
   page = 1;
 
   @ApiPropertyOptional({
@@ -33,7 +33,7 @@ export class AdminListOrdersQueryDto implements ListOrdersInput {
   @Min(1)
   @Max(50)
   @IsOptional()
-  @Type(() => Number)
+  @toInt()
   pageSize = 10;
 
   @ApiPropertyOptional({

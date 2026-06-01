@@ -4,25 +4,20 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { LoginForm } from "@/features/auth/ui/login-form";
 import { useAppSelector } from "@/shared/store/hooks";
-import {
-  selectAuthUser,
-  selectIsAuthenticated,
-} from "@/features/auth/model/selectors";
-import { routes } from "@/shared/config/routes";
+import { selectIsAuthenticated } from "@/features/auth/model/selectors";
+import { getAuthenticatedAccessRedirect } from "@/shared/lib/auth-navigation";
 
 export function LoginScene() {
   const router = useRouter();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
-  const user = useAppSelector(selectAuthUser);
 
   useEffect(() => {
     if (!isAuthenticated) {
       return;
     }
 
-    const destination = user?.role === "ADMIN" ? routes.admin : routes.home;
-    router.replace(destination);
-  }, [isAuthenticated, router, user]);
+    router.replace(getAuthenticatedAccessRedirect());
+  }, [isAuthenticated, router]);
 
   if (isAuthenticated) {
     return null;

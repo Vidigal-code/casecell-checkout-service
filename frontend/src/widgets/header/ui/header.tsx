@@ -4,9 +4,10 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { Menu, X, ShoppingBag } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { AuthMenu } from "@/features/auth/ui/auth-menu";
 import { ThemeToggle } from "@/features/theme/ui/theme-toggle";
-import { motion, AnimatePresence } from "framer-motion";
+import { getAuthenticatedNavLink } from "@/shared/lib/auth-navigation";
 import { routes } from "@/shared/config/routes";
 import { useAppSelector } from "@/shared/store/hooks";
 import {
@@ -14,13 +15,18 @@ import {
   selectIsAuthenticated,
 } from "@/features/auth/model/selectors";
 
+interface NavItem {
+  href: Route;
+  label: string;
+}
+
 export function Header() {
   const [isMenuOpen, setMenuOpen] = useState(false);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const user = useAppSelector(selectAuthUser);
 
-  const navItems = useMemo<Array<{ href: Route; label: string }>>(() => {
-    const items: Array<{ href: Route; label: string }> = [
+  const navItems = useMemo<NavItem[]>(() => {
+    const items: NavItem[] = [
       { href: routes.home, label: "Vitrine" },
       { href: routes.cart, label: "Carrinho" },
     ];
@@ -30,8 +36,11 @@ export function Header() {
         { href: routes.login, label: "Login" },
         { href: routes.register, label: "Cadastro" },
       );
-    } else if (user?.role === "ADMIN") {
-      items.push({ href: routes.admin, label: "Painel" });
+    } else {
+      const link = getAuthenticatedNavLink(user);
+      if (link && !items.some((item) => item.href === link.href)) {
+        items.push({ href: link.href as Route, label: link.label });
+      }
     }
 
     return items;
@@ -73,11 +82,7 @@ export function Header() {
           className="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 text-neutral-600 transition dark:border-neutral-700 dark:text-slate-200 md:hidden"
           onClick={() => setMenuOpen((prev) => !prev)}
         >
-          {isMenuOpen ? (
-            <X className="h-5 w-5" />
-          ) : (
-            <Menu className="h-5 w-5" />
-          )}
+          {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
 

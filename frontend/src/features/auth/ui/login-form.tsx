@@ -11,6 +11,7 @@ import { useAppDispatch } from "@/shared/store/hooks";
 import { setCredentials } from "@/features/auth/model/auth-slice";
 import { StatusMessage } from "@/shared/ui/status-message";
 import { routes } from "@/shared/config/routes";
+import { getPostAuthRedirect } from "@/shared/lib/auth-navigation";
 
 interface LoginFormValues {
   email: string;
@@ -31,9 +32,7 @@ export function LoginForm() {
     mutationFn: login,
     onSuccess: (data) => {
       dispatch(setCredentials(data));
-      const destination =
-        data.user.role === "ADMIN" ? routes.admin : routes.home;
-      router.push(destination);
+      router.push(getPostAuthRedirect(data.user));
     },
   });
 
