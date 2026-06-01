@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { ShieldCheck, Zap, RefreshCw, ShoppingCart } from 'lucide-react';
+import { ShieldCheck, Zap, RefreshCw, ShoppingCart, LineChart } from 'lucide-react';
 import { Product } from '@/entities/product/model/types';
 import { ProductGrid } from '@/widgets/product-grid/ui/product-grid';
 import { StatusMessage } from '@/shared/ui/status-message';
@@ -33,6 +33,7 @@ const heroShowcaseImage =
 
 export function HomeExperience() {
   const [selectedProduct, setSelectedProduct] = useState<Product | undefined>();
+  const [heroImageError, setHeroImageError] = useState(false);
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-6 py-16">
       <section
@@ -88,14 +89,24 @@ export function HomeExperience() {
         <aside className="space-y-5 rounded-3xl border border-neutral-200 bg-gradient-to-br from-brand-light via-white to-white p-8 shadow-xl backdrop-blur-md transition-colors dark:border-slate-800/70 dark:bg-gradient-to-br dark:from-slate-950/90 dark:via-slate-900/80 dark:to-slate-950/90 dark:shadow-black/60">
           <div className="relative overflow-hidden rounded-3xl border border-neutral-100/60 bg-white/40 shadow-inner shadow-white/40 dark:border-slate-800/60 dark:bg-slate-900/60 dark:shadow-black/30">
             <div className="relative aspect-[4/3] w-full">
-              <Image
-                src={heroShowcaseImage}
-                alt="Painel de pedidos CaseCell exibindo performance do checkout"
-                fill
-                priority
-                sizes="(min-width: 1024px) 380px, 100vw"
-                className="object-cover"
-              />
+              {!heroImageError ? (
+                <Image
+                  src={heroShowcaseImage}
+                  alt="Painel de pedidos CaseCell evidenciando performance do checkout"
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 380px, 100vw"
+                  className="object-cover"
+                  onError={() => setHeroImageError(true)}
+                />
+              ) : (
+                <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-brand-primary/25 via-brand-secondary/30 to-brand-primary/35 text-brand-primary dark:text-brand-light">
+                  <LineChart className="h-10 w-10" />
+                  <span className="px-8 text-center text-sm font-semibold uppercase tracking-[0.2em] opacity-80">
+                    Performance observável
+                  </span>
+                </div>
+              )}
             </div>
           </div>
           <h2 className="font-display text-2xl text-neutral-900 dark:text-slate-100">O que você pode testar</h2>
