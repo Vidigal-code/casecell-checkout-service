@@ -21,3 +21,8 @@ frontend/coverage/
 postgres-data/
 redis-data/
 docker-compose.override.yml
+.idea/
+.fleet/
+.ijwb/
+.iml
+*.iml

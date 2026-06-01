@@ -23,6 +23,9 @@ RUN apt-get update \
 COPY package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/scripts ./scripts
+COPY --from=builder /app/tsconfig.seed.json ./tsconfig.seed.json
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
 COPY --from=builder /app/dist ./dist
 EXPOSE 3001
 CMD [ "node", "dist/main.js" ]

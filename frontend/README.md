@@ -51,6 +51,7 @@ Frontend Next.js que entrega vitrine performática, checkout resiliente e painel
    - `NEXT_PUBLIC_API_BASE_URL`: `/api/v1` (caminho relativo usado pelo browser).
    - `NEXT_PUBLIC_DEFAULT_THEME`: tema inicial (`light` por padrão).
    - `INTERNAL_API_BASE_URL`: `http://localhost:3001` para roteamento interno do Next.
+   - `CORS_ALLOWED_ORIGINS` no backend deve incluir o domínio onde o frontend roda (ex.: `http://localhost:3000`) para que as requisições tenham sucesso.
    - Para builds Docker, utilize `DOCKER_NEXT_PUBLIC_API_BASE_URL=/api/v1`, `DOCKER_INTERNAL_API_BASE_URL=http://backend:3001` e `DOCKER_NEXT_PUBLIC_DEFAULT_THEME=light` (já presentes no compose). O arquivo `frontend/.env.docker` replica esses valores para o container.
 
 ### Scripts
@@ -123,6 +124,7 @@ Frontend Next.js que entrega vitrine performática, checkout resiliente e painel
     - `NEXT_PUBLIC_API_BASE_URL`: `/api/v1` (host-relative path consumed by the browser).
     - `NEXT_PUBLIC_DEFAULT_THEME`: initial theme (`light` by default).
     - `INTERNAL_API_BASE_URL`: `http://localhost:3001` for Next.js internal routing.
+    - Ensure the backend `CORS_ALLOWED_ORIGINS` includes the domain serving this frontend (e.g., `http://localhost:3000`) so requests succeed.
     - For Docker builds, rely on `DOCKER_NEXT_PUBLIC_API_BASE_URL=/api/v1`, `DOCKER_INTERNAL_API_BASE_URL=http://backend:3001`, and `DOCKER_NEXT_PUBLIC_DEFAULT_THEME=light` (already defined in compose). The `frontend/.env.docker` file mirrors these values inside the UI container.
     - For Docker builds, rely on `DOCKER_NEXT_PUBLIC_API_BASE_URL` and `DOCKER_NEXT_PUBLIC_DEFAULT_THEME` (pre-set to `http://backend:3001`).
 

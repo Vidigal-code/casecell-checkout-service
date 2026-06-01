@@ -7,12 +7,13 @@ import { Menu, X, ShoppingBag } from 'lucide-react';
 import { AuthMenu } from '@/features/auth/ui/auth-menu';
 import { ThemeToggle } from '@/features/theme/ui/theme-toggle';
 import { motion, AnimatePresence } from 'framer-motion';
+import { routes } from '@/shared/config/routes';
 
 const navItems: Array<{ href: Route; label: string }> = [
-  { href: '/' as Route, label: 'Vitrine' },
-  { href: '/cart' as Route, label: 'Carrinho' },
-  { href: '/login' as Route, label: 'Login' },
-  { href: '/register' as Route, label: 'Cadastro' },
+  { href: routes.home, label: 'Vitrine' },
+  { href: routes.cart, label: 'Carrinho' },
+  { href: routes.login, label: 'Login' },
+  { href: routes.register, label: 'Cadastro' },
 ];
 
 export function Header() {
@@ -21,7 +22,7 @@ export function Header() {
   return (
     <header className="fixed left-0 right-0 top-0 z-50 border-b border-neutral-200 bg-white/90 backdrop-blur transition-colors dark:border-neutral-800 dark:bg-neutral-900/80">
       <div className="mx-auto flex h-[var(--header-height)] w-full max-w-6xl items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-2 font-display text-xl text-neutral-900 dark:text-slate-100">
+        <Link href={routes.home} className="flex items-center gap-2 font-display text-xl text-neutral-900 dark:text-slate-100">
           <span className="rounded-full bg-gradient-to-br from-brand-primary to-brand-secondary p-2 text-white shadow">
             <ShoppingBag className="h-5 w-5" />
           </span>

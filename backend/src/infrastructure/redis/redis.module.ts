@@ -4,6 +4,7 @@ import Redis from 'ioredis';
 import { REDIS_CLIENT } from './redis.constants';
 import { RedisIdempotencyStore } from './redis-idempotency.store';
 import { RedisLockManager } from './redis-lock.manager';
+import { RedisTokenRevocationStore } from './redis-token-revocation.store';
 
 @Global()
 @Module({
@@ -22,7 +23,8 @@ import { RedisLockManager } from './redis-lock.manager';
     },
     RedisIdempotencyStore,
     RedisLockManager,
+    RedisTokenRevocationStore,
   ],
-  exports: [REDIS_CLIENT, RedisIdempotencyStore, RedisLockManager],
+  exports: [REDIS_CLIENT, RedisIdempotencyStore, RedisLockManager, RedisTokenRevocationStore],
 })
 export class RedisModule {}

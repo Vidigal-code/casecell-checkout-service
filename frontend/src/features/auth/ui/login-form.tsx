@@ -10,6 +10,7 @@ import { Input } from '@/shared/ui/input';
 import { useAppDispatch } from '@/shared/store/hooks';
 import { setCredentials } from '@/features/auth/model/auth-slice';
 import { StatusMessage } from '@/shared/ui/status-message';
+import { routes } from '@/shared/config/routes';
 
 interface LoginFormValues {
   email: string;
@@ -30,7 +31,7 @@ export function LoginForm() {
     mutationFn: login,
     onSuccess: (data) => {
       dispatch(setCredentials(data));
-      router.push('/');
+      router.push(routes.home);
     },
   });
 
@@ -85,7 +86,7 @@ export function LoginForm() {
 
       <p className="mt-6 text-center text-sm text-neutral-600 dark:text-slate-300">
         Ainda não tem conta?{' '}
-        <Link href="/register" className="font-medium text-brand-primary hover:underline">
+        <Link href={routes.register} className="font-medium text-brand-primary hover:underline">
           Crie uma agora
         </Link>
       </p>

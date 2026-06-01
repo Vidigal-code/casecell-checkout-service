@@ -55,6 +55,8 @@ API NestJS responsável por catálogo, checkout resiliente e sincronia assíncro
    - `JWT_*`: segredos e expirações dos tokens.
    - `ERP_SIMULATION_*`: controla latência e taxa de falha do ERP fake.
    - `RATE_LIMIT_*`, `IDEMPOTENCY_TTL_SECONDS`, `PRODUCTS_CACHE_TTL_SECONDS`: políticas de proteção/retention.
+   - `CORS_ALLOWED_ORIGINS`, `CORS_ALLOWED_HEADERS`, `CORS_EXPOSED_HEADERS`, `SECURITY_HSTS_*`, `SECURITY_REFERRER_POLICY`: endurecimento de CORS e cabeçalhos HTTP.
+4. O serviço Postgres do `docker compose` cria os bancos `casecell` (produção/dev) e `casecell_test` (testes) via `docker/postgres/init-test-db.sql`. Antes de rodar a suíte automatizada, execute `docker compose up -d postgres` na raiz do repositório para garantir que `TEST_DATABASE_URL` esteja acessível.
 
 ### Execução (Desenvolvimento)
 ```bash
@@ -78,8 +80,8 @@ npm run start:dev
 
 ### Estratégia de Testes
 - Unit: entidades, casos de uso e portas com `ts-jest`.
-- Integração: `pg-mem` substitui PostgreSQL real; dublês de Redis.
-- E2E: `Supertest` cobre rotas HTTP com seed controlado.
+- Integração: executadas contra PostgreSQL real apontado por `TEST_DATABASE_URL`, com limpeza transacional por teste.
+- E2E: `Supertest` cobre rotas HTTP com seed controlado e dependência do banco real.
 
 ### Estrutura de Pastas
 - `src/presentation`: controllers, guards, interceptors, modules.
@@ -93,6 +95,7 @@ npm run start:dev
 - Logs estruturados (`nestjs-pino` + `rotating-file-stream`).
 - Métricas HTTP/worker em `/metrics`.
 - Guard global (`RateLimitGuard`) diferencia usuário autenticado de IP.
+- CORS restrito configurável via `CORS_ALLOWED_ORIGINS` com cabeçalhos de segurança (`helmet`, HSTS em produção, Referrer-Policy, exposição controlada de `X-RateLimit-*`).
 - Circuit breaker distribuído protege chamadas ao ERP.
 - Respostas de checkout categorizam validação, estoque insuficiente, duplicidade e falha técnica.
 
@@ -145,6 +148,8 @@ npm run start:dev
    - `JWT_*`: token secrets and expirations.
    - `ERP_SIMULATION_*`: governs ERP delay and failure rate.
    - `RATE_LIMIT_*`, `IDEMPOTENCY_TTL_SECONDS`, `PRODUCTS_CACHE_TTL_SECONDS`: protection/retention knobs.
+   - `CORS_ALLOWED_ORIGINS`, `CORS_ALLOWED_HEADERS`, `CORS_EXPOSED_HEADERS`, `SECURITY_HSTS_*`, `SECURITY_REFERRER_POLICY`: CORS tightening and HTTP header hardening.
+4. The compose Postgres service provisions both `casecell` (dev/prod) and `casecell_test` (tests) via `docker/postgres/init-test-db.sql`. Before running the automated suite, execute `docker compose up -d postgres` from the repo root so the database defined in `TEST_DATABASE_URL` is reachable.
 
 ### Running Locally
 ```bash
@@ -168,8 +173,8 @@ npm run start:dev
 
 ### Testing Strategy
 - Unit: entities, use cases, and ports (ts-jest).
-- Integration: `pg-mem` emulates PostgreSQL, Redis doubles handle idempotency/locks.
-- E2E: `Supertest` drives HTTP routes with deterministic seed data.
+- Integration: runs against the real PostgreSQL instance referenced by `TEST_DATABASE_URL`, with transactional cleanup per test.
+- E2E: `Supertest` drives HTTP routes backed by the real database with deterministic seed data.
 
 ### Folder Structure
 - `src/presentation`: controllers, guards, interceptors, modules.
@@ -183,6 +188,7 @@ npm run start:dev
 - Structured logging (nestjs-pino + rotating-file-stream).
 - Prometheus counters/histograms exposed at `/metrics`.
 - `RateLimitGuard` differentiates authenticated users vs IP throttling.
+- Locked-down CORS via `CORS_ALLOWED_ORIGINS` with security headers (helmet-managed, production HSTS, referrer policy, controlled `X-RateLimit-*` exposure).
 - Distributed circuit breaker shields ERP calls.
 - Checkout responses classify validation errors, stock shortages, duplicates, and technical failures.
 

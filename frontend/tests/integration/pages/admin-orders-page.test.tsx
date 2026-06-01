@@ -52,7 +52,7 @@ describe('AdminOrdersPage', () => {
     renderAdmin();
 
     await waitFor(() => {
-      expect(screen.getByText(/Painel administrativo/i)).toBeInTheDocument();
+      expect(screen.getByText(/Pedidos recentes/i)).toBeInTheDocument();
       expect(screen.getByText(/order-1/i)).toBeInTheDocument();
     });
 

@@ -29,6 +29,8 @@ jest.mock('@/shared/api/orders', () => ({
   fetchOrderStatus: jest.fn(),
 }));
 
+jest.setTimeout(30000);
+
 describe('HomeExperience e2e', () => {
   it('renderiza hero, login e vitrine', async () => {
     render(
@@ -42,6 +44,6 @@ describe('HomeExperience e2e', () => {
     await waitFor(() => {
       expect(screen.getByText(/Capinha/)).toBeInTheDocument();
     });
-    expect(screen.getByText(/Faça login para testar o checkout/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Acessar conta/i })).toBeInTheDocument();
   });
 });

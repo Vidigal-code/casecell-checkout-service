@@ -6,7 +6,10 @@ import { LogIn, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAppDispatch, useAppSelector } from '@/shared/store/hooks';
 import { clearSession } from '@/features/auth/model/auth-slice';
-import { selectAuthUser, selectIsAuthenticated } from '@/features/auth/model/selectors';
+import { selectAuthUser, selectIsAuthenticated, selectRefreshToken } from '@/features/auth/model/selectors';
+import { routes } from '@/shared/config/routes';
+import { useMutation } from '@tanstack/react-query';
+import { logout as requestLogout } from '@/features/auth/api/logout';
 
 interface AuthMenuProps {
   compact?: boolean;
@@ -16,17 +19,36 @@ interface AuthMenuProps {
 export function AuthMenu({ compact = false, onNavigate }: AuthMenuProps) {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const user = useAppSelector(selectAuthUser);
+  const refreshToken = useAppSelector(selectRefreshToken);
   const dispatch = useAppDispatch();
 
+  const logoutMutation = useMutation({
+    mutationFn: requestLogout,
+    onSettled: () => {
+      dispatch(clearSession());
+      if (onNavigate) {
+        onNavigate();
+      }
+    },
+  });
+
   const handleLogout = useCallback(() => {
-    dispatch(clearSession());
-  }, [dispatch]);
+    if (refreshToken) {
+      logoutMutation.mutate({ refreshToken });
+    } else {
+      logoutMutation.reset();
+      dispatch(clearSession());
+      if (onNavigate) {
+        onNavigate();
+      }
+    }
+  }, [dispatch, logoutMutation, onNavigate, refreshToken]);
 
   if (!isAuthenticated) {
     return (
       <motion.div whileTap={{ scale: 0.97 }}>
         <Link
-          href="/login"
+          href={routes.login}
           onClick={onNavigate}
           className={`flex items-center gap-2 rounded-full border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-600 transition hover:border-brand-primary hover:text-brand-primary dark:border-neutral-700 dark:text-slate-300 dark:hover:border-brand-primary/60 dark:hover:text-brand-primary/80 ${compact ? 'w-full justify-center' : ''}`}
         >
@@ -42,7 +64,7 @@ export function AuthMenu({ compact = false, onNavigate }: AuthMenuProps) {
       {user?.role === 'ADMIN' ? (
         <motion.div whileTap={{ scale: 0.97 }}>
           <Link
-            href="/admin"
+           href={routes.admin}
             className={`flex items-center gap-2 rounded-full border border-brand-secondary/40 px-4 py-2 text-sm font-semibold text-brand-secondary transition hover:border-brand-secondary/70 dark:text-brand-secondary ${compact ? 'w-full justify-center' : ''}`}
             onClick={onNavigate}
           >
@@ -54,7 +76,8 @@ export function AuthMenu({ compact = false, onNavigate }: AuthMenuProps) {
         type="button"
         whileTap={{ scale: 0.97 }}
         onClick={handleLogout}
-        className={`flex items-center gap-2 rounded-full bg-neutral-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700 ${compact ? 'w-full justify-center' : ''}`}
+        disabled={logoutMutation.isPending}
+        className={`flex items-center gap-2 rounded-full bg-neutral-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:opacity-70 dark:bg-neutral-800 dark:hover:bg-neutral-700 ${compact ? 'w-full justify-center' : ''}`}
       >
         <LogOut className="h-4 w-4" />
         {user?.email ?? 'Sair'}

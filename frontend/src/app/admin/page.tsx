@@ -1,5 +1,5 @@
-import { AdminOrdersPage } from '@/scenes/admin/ui/admin-orders-page';
+import { AdminDashboard } from '@/scenes/admin/ui/admin-dashboard';
 
 export default function AdminPage() {
-  return <AdminOrdersPage />;
+  return <AdminDashboard />;
 }

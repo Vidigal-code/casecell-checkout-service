@@ -8,6 +8,7 @@ import { Product } from '@domain/product/product.entity';
 import { ConfigService } from '@nestjs/config';
 import { EnqueueErpSyncCommand } from '@application/checkout/enqueue-erp-sync.command';
 import { TelemetryService } from '@application/ports/telemetry';
+import { PrismaService } from '@infrastructure/prisma/prisma.service';
 
 const createProduct = (id = 'product-1') =>
   Product.create(
@@ -68,6 +69,11 @@ describe('CreateCheckoutCommand', () => {
     }),
   } as unknown as ConfigService;
 
+  const prismaTransactionMock = jest.fn();
+  const prisma = {
+    $transaction: prismaTransactionMock,
+  } as unknown as PrismaService;
+
   const command = new CreateCheckoutCommand(
     productRepository,
     orderRepository,
@@ -75,6 +81,7 @@ describe('CreateCheckoutCommand', () => {
     lockManager,
     logger,
     telemetry,
+    prisma,
     enqueueErpSync,
     configService,
   );
@@ -90,6 +97,31 @@ describe('CreateCheckoutCommand', () => {
     orderRepository.save.mockResolvedValue();
     orderRepository.update.mockResolvedValue();
     enqueueErpSync.execute.mockResolvedValue();
+    prismaTransactionMock.mockImplementation(async (callback: any) => {
+      const productRecord = {
+        id: 'product-1',
+        name: 'Capinha',
+        description: 'Proteção',
+        sku: 'SKU-1',
+        priceCents: 1000,
+        stock: 10,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const tx = {
+        product: {
+          findUnique: jest.fn().mockResolvedValue(productRecord),
+          updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+        },
+        order: {
+          create: jest.fn().mockResolvedValue(undefined),
+        },
+      };
+
+      return callback(tx);
+    });
   });
 
   it('deve concluir checkout com sucesso e enfileirar sincronização', async () => {
@@ -102,7 +134,7 @@ describe('CreateCheckoutCommand', () => {
 
     expect(result.status).toBe(CheckoutResponseStatus.SUCCESS);
     expect(result.orderId).toBeDefined();
-    expect(orderRepository.save).toHaveBeenCalledTimes(1);
+    expect(orderRepository.update).toHaveBeenCalledTimes(1);
     expect(enqueueErpSync.execute).toHaveBeenCalledWith(
       expect.objectContaining({ orderId: expect.any(String), productId: 'product-1', quantity: 2 }),
     );
@@ -134,7 +166,31 @@ describe('CreateCheckoutCommand', () => {
   });
 
   it('deve sinalizar estoque insuficiente sem enfileirar', async () => {
-    productRepository.reserveStock.mockRejectedValue(new Error('Insufficient stock'));
+    prismaTransactionMock.mockImplementationOnce(async (callback: any) => {
+      const productRecord = {
+        id: 'product-1',
+        name: 'Capinha',
+        description: 'Proteção',
+        sku: 'SKU-1',
+        priceCents: 1000,
+        stock: 10,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const tx = {
+        product: {
+          findUnique: jest.fn().mockResolvedValue(productRecord),
+          updateMany: jest.fn().mockResolvedValue({ count: 0 }),
+        },
+        order: {
+          create: jest.fn().mockResolvedValue(undefined),
+        },
+      };
+
+      return callback(tx);
+    });
 
     const result = await command.execute({
       customerId: 'customer-1',

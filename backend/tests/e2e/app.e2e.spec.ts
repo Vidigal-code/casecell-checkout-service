@@ -1,6 +1,6 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import * as request from 'supertest';
+import request from 'supertest';
 import * as argon2 from 'argon2';
 import { v4 as uuid } from 'uuid';
 import { AppModule } from '@presentation/app.module';
@@ -22,6 +22,9 @@ import { CheckoutResponseStatus } from '@application/checkout/create-checkout.co
 import { EnqueueErpSyncCommand } from '@application/checkout/enqueue-erp-sync.command';
 import { Queue } from 'bullmq';
 import { ErpSyncWorker } from '@infrastructure/queues/erp-sync.worker';
+import { TokenRevocationStore } from '@application/ports/token-revocation-store';
+
+jest.setTimeout(30000);
 
 class InMemoryIdempotencyStore implements IdempotencyStore {
   private storage = new Map<string, { response: unknown; createdAt: Date }>();
@@ -113,12 +116,35 @@ class StubQueue {
   async close() {}
 }
 
+class InMemoryTokenRevocationStore implements TokenRevocationStore {
+  private storage = new Map<string, number>();
+
+  async revoke(tokenHash: string, ttlSeconds: number): Promise<void> {
+    const expiresAt = Math.floor(Date.now() / 1000) + ttlSeconds;
+    this.storage.set(tokenHash, expiresAt);
+  }
+
+  async isRevoked(tokenHash: string): Promise<boolean> {
+    const expiresAt = this.storage.get(tokenHash);
+    if (!expiresAt) {
+      return false;
+    }
+    const now = Math.floor(Date.now() / 1000);
+    if (expiresAt <= now) {
+      this.storage.delete(tokenHash);
+      return false;
+    }
+    return true;
+  }
+}
+
 describe('App e2e', () => {
   let app: INestApplication;
   let prisma: Awaited<ReturnType<typeof createInMemoryPrisma>>;
   const idempotencyStore = new InMemoryIdempotencyStore();
   const enqueueStub = new StubEnqueueErpSyncCommand();
   const queueStub = new StubQueue();
+  const revocationStore = new InMemoryTokenRevocationStore();
 
   beforeAll(async () => {
     prisma = await createInMemoryPrisma();
@@ -148,6 +174,8 @@ describe('App e2e', () => {
       .useValue(enqueueStub)
       .overrideProvider(TOKENS.ERP_SYNC_QUEUE)
       .useValue(queueStub as unknown as Queue)
+      .overrideProvider(TOKENS.TOKEN_REVOCATION_STORE)
+      .useValue(revocationStore)
       .overrideProvider(ErpSyncWorker)
       .useValue({ onModuleDestroy: async () => {} })
       .compile();
@@ -196,7 +224,7 @@ describe('App e2e', () => {
       .send({ email: 'customer@test.com', password: 'Cliente12345@' })
       .expect(200);
 
-    const { accessToken } = loginResponse.body;
+    const { accessToken, refreshToken } = loginResponse.body;
 
     const productsResponse = await request(app.getHttpServer())
       .get('/api/v1/products?page=1&pageSize=10')
@@ -230,5 +258,15 @@ describe('App e2e', () => {
       .get(`/api/v1/orders/${orderId}`)
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
+
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/logout')
+      .send({ refreshToken })
+      .expect(200);
+
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/refresh')
+      .send({ refreshToken })
+      .expect(401);
   });
 });

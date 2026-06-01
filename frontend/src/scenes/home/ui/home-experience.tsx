@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import type { Route } from 'next';
 import { motion } from 'framer-motion';
 import { ShieldCheck, Zap, RefreshCw, ShoppingCart } from 'lucide-react';
 import { Product } from '@/entities/product/model/types';
 import { ProductGrid } from '@/widgets/product-grid/ui/product-grid';
 import { StatusMessage } from '@/shared/ui/status-message';
+import { routes } from '@/shared/config/routes';
 
 const heroHighlights = [
   {
@@ -29,9 +29,6 @@ const heroHighlights = [
 
 export function HomeExperience() {
   const [selectedProduct, setSelectedProduct] = useState<Product | undefined>();
-  const loginRoute = '/login' as Route;
-  const registerRoute = '/register' as Route;
-
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-6 py-16">
       <section
@@ -69,14 +66,14 @@ export function HomeExperience() {
 
           <div className="flex flex-wrap gap-3">
             <Link
-              href={loginRoute}
+              href={routes.login}
               className="inline-flex items-center gap-2 rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-primary/40 transition hover:shadow-brand-primary/60"
             >
               <ShoppingCart className="h-4 w-4" />
               Acessar conta
             </Link>
             <Link
-              href={registerRoute}
+              href={routes.register}
               className="inline-flex items-center gap-2 rounded-full border border-brand-primary/40 px-6 py-3 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary/10 dark:border-brand-primary/60 dark:text-brand-primary/90"
             >
               Criar conta

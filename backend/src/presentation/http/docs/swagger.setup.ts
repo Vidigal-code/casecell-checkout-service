@@ -11,6 +11,13 @@ export const setupSwaggerDocs = (app: INestApplication): void => {
       .setTitle(inline(localeConfig.title))
       .setDescription(multiline(localeConfig.description))
       .setVersion(version)
+      .addServer({
+        url: '/api/v1',
+        description: inline({
+          pt: 'Gateway interno (mesma origem do backend)',
+          en: 'Internal gateway (same origin as backend)',
+        }),
+      })
       .addBearerAuth();
 
     const document = SwaggerModule.createDocument(app, builder.build());

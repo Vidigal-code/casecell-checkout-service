@@ -128,8 +128,9 @@ flowchart LR
   ```bash
   cp envexample.txt .env
   ```
-  Ajuste `NEXT_PUBLIC_API_BASE_URL` para `/api/v1` (chamadas relativas ao host) e mantenha `INTERNAL_API_BASE_URL=http://localhost:3001` para o roteamento interno. Ao usar Docker, utilize `DOCKER_NEXT_PUBLIC_API_BASE_URL=/api/v1`, `DOCKER_INTERNAL_API_BASE_URL=http://backend:3001` e `DOCKER_NEXT_PUBLIC_DEFAULT_THEME=light` — o compose já fornece esses valores. Backend e frontend consomem automaticamente esse `.env` (Docker, Prisma e Next.js).
-  O arquivo `frontend/.env.docker` acompanha esses mesmos valores para o container de UI.
+   Ajuste `NEXT_PUBLIC_API_BASE_URL` para `/api/v1` (chamadas relativas ao host) e mantenha `INTERNAL_API_BASE_URL=http://localhost:3001` para o roteamento interno. Ao usar Docker, utilize `DOCKER_NEXT_PUBLIC_API_BASE_URL=/api/v1`, `DOCKER_INTERNAL_API_BASE_URL=http://backend:3001` e `DOCKER_NEXT_PUBLIC_DEFAULT_THEME=light` — o compose já fornece esses valores. Backend e frontend consomem automaticamente esse `.env` (Docker, Prisma e Next.js).
+   Configure `CORS_ALLOWED_ORIGINS` com todos os domínios confiáveis que acessarão a API (ex.: `http://localhost:3000` em desenvolvimento, `https://checkout.casecell.shop` em produção) e ajuste cabeçalhos/ métodos conforme necessário.
+   O arquivo `frontend/.env.docker` acompanha esses mesmos valores para o container de UI.
 - Backend (modo dev):
   ```bash
   cd backend
@@ -153,6 +154,7 @@ flowchart LR
   ```
   Provisiona Postgres, Redis, backend e frontend prontos para uso.
 - Documentação Swagger: <http://localhost:3001/docs/pt> e <http://localhost:3001/docs/en>
+- Banco de testes: o compose cria automaticamente `casecell_test` via `docker/postgres/init-test-db.sql`. Para rodar as suítes localmente, suba apenas o Postgres (`docker compose up -d postgres`), garanta que `TEST_DATABASE_URL` aponte para esse banco e execute `npm test` na pasta `backend`.
 
 ### Testes Automatizados
 | Contexto | Comando |
@@ -166,6 +168,8 @@ flowchart LR
 | Frontend integração | `npm run test:integration` |
 | Frontend e2e | `npm run test:e2e` |
 
+> ℹ️ Antes de executar os testes do backend, inicie o serviço Postgres com `docker compose up -d postgres` para garantir que o banco `casecell_test` definido em `TEST_DATABASE_URL` esteja acessível.
+
 ### Fluxos Principais
 1. Listagem e busca de produtos com paginação, skeletons e fallback de imagem.
 2. Registro com senha forte e login persistido (tokens + refresh) para clientes e administradores.
@@ -178,6 +182,7 @@ flowchart LR
 - Logs estruturados (Pino + rotating-file-stream) com contexto por requisição.
 - Métricas Prometheus e spans OpenTelemetry para checkout e jobs do ERP.
 - Rate limiting global com identificação por usuário/IP.
+- CORS restrito configurável via `CORS_ALLOWED_ORIGINS` e cabeçalhos de segurança automatizados pelo `helmet` (HSTS em produção, Referrer-Policy, exposição controlada de `X-RateLimit-*`).
 - Circuit breaker e retries controlados protegem integrações externas.
 
 ### Parte 1.A — Respostas Conceituais
@@ -257,8 +262,9 @@ flowchart LR
   ```bash
   cp envexample.txt .env
   ```
-  Set `NEXT_PUBLIC_API_BASE_URL` to `/api/v1` (host-relative) and keep `INTERNAL_API_BASE_URL=http://localhost:3001` for server-side routing. When running Docker, rely on `DOCKER_NEXT_PUBLIC_API_BASE_URL=/api/v1`, `DOCKER_INTERNAL_API_BASE_URL=http://backend:3001`, and `DOCKER_NEXT_PUBLIC_DEFAULT_THEME=light`—the compose file already provides those defaults. Backend and frontend automatically load this `.env` (Docker, Prisma and Next.js).
-  The repository ships with `frontend/.env.docker`, mirroring these values so browsers always call `http://localhost:3001` while the container reaches the backend via `backend:3001`.
+   Set `NEXT_PUBLIC_API_BASE_URL` to `/api/v1` (host-relative) and keep `INTERNAL_API_BASE_URL=http://localhost:3001` for server-side routing. When running Docker, rely on `DOCKER_NEXT_PUBLIC_API_BASE_URL=/api/v1`, `DOCKER_INTERNAL_API_BASE_URL=http://backend:3001`, and `DOCKER_NEXT_PUBLIC_DEFAULT_THEME=light`—the compose file already provides those defaults. Backend and frontend automatically load this `.env` (Docker, Prisma and Next.js).
+   Configure `CORS_ALLOWED_ORIGINS` to list every trusted domain consuming the API (e.g., `http://localhost:3000` for development, `https://checkout.casecell.shop` in production) and adjust headers/methods as needed.
+   The repository ships with `frontend/.env.docker`, mirroring these values so browsers always call `http://localhost:3001` while the container reaches the backend via `backend:3001`.
 - Backend (dev mode):
   ```bash
   cd backend
@@ -282,6 +288,7 @@ flowchart LR
   ```
   Provisions Postgres, Redis, backend and frontend ready to run.
 - Swagger docs: <http://localhost:3001/docs/pt> and <http://localhost:3001/docs/en>
+- Test database: the compose file seeds `casecell_test` via `docker/postgres/init-test-db.sql`. When running suites locally, start only Postgres (`docker compose up -d postgres`), ensure `TEST_DATABASE_URL` points to that database, and run `npm test` inside `backend`.
 
 ### Automated Tests
 | Scope | Command |
@@ -292,8 +299,10 @@ flowchart LR
 | Backend – e2e | `npm run test:e2e`
 | Frontend – all | `npm test`
 | Frontend – unit | `npm run test:unit`
-| Frontend – integration | `npm run test:integration`
-| Frontend – e2e | `npm run test:e2e`
+| Frontend - integration | `npm run test:integration`
+| Frontend - e2e | `npm run test:e2e`
+
+> ℹ️ Start the Postgres service first (`docker compose up -d postgres`) so the `casecell_test` database configured in `TEST_DATABASE_URL` is reachable before launching backend tests.
 
 ### Core Flows
 1. Product catalog with pagination, search, skeleton states, and graceful image fallbacks.
@@ -307,6 +316,7 @@ flowchart LR
 - Structured logging (Pino + rotating-file-stream) with per-request context.
 - Prometheus metrics and OpenTelemetry spans for checkout and ERP workers.
 - Global rate limiting with user/IP tracking.
+- Locked-down CORS via `CORS_ALLOWED_ORIGINS` plus security headers powered by `helmet` (production HSTS, referrer policy, and controlled `X-RateLimit-*` exposure).
 - Circuit breaker plus controlled retries around external integrations.
 
 ### Conceptual Answers (Challenge 1.A)

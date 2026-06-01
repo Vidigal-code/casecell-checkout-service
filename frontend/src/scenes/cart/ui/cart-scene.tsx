@@ -14,6 +14,7 @@ import { formatCurrency } from '@/shared/lib/format-currency';
 import { submitCheckout, CheckoutResponse } from '@/shared/api/checkout';
 import { StatusMessage } from '@/shared/ui/status-message';
 import { selectIsAuthenticated } from '@/features/auth/model/selectors';
+import { routes } from '@/shared/config/routes';
 
 interface CheckoutSummary {
   productId: string;
@@ -72,7 +73,7 @@ export function CartScene() {
             <h2 className="mt-6 font-display text-2xl text-neutral-900 dark:text-slate-100">Seu carrinho está vazio</h2>
             <p className="mt-2 text-neutral-500 dark:text-slate-300">Explore a vitrine e adicione capinhas com um clique.</p>
             <Link
-              href="/"
+              href={routes.home}
               className="mt-6 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-brand-primary to-brand-secondary px-5 py-2 font-semibold text-white shadow-lg shadow-brand-primary/40"
             >
               Ver produtos

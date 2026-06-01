@@ -1,65 +1,43 @@
-import { newDb } from 'pg-mem';
 import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
 
 export async function createInMemoryPrisma(): Promise<PrismaClient> {
-  const db = newDb({ autoCreateForeignKeyIndices: true });
+  const url = process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL;
 
-  db.public.none(`
-    CREATE TYPE "Role" AS ENUM ('ADMIN', 'CUSTOMER');
-    CREATE TYPE "OrderStatus" AS ENUM ('PENDING', 'PROCESSING', 'SUCCESS', 'FAILED');
+  if (!url) {
+    throw new Error('TEST_DATABASE_URL or DATABASE_URL must be provided to run tests.');
+  }
 
-    CREATE TABLE "User" (
-      "id" UUID PRIMARY KEY,
-      "email" TEXT UNIQUE NOT NULL,
-      "passwordHash" TEXT NOT NULL,
-      "role" "Role" NOT NULL,
-      "isActive" BOOLEAN NOT NULL DEFAULT true,
-      "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
-      "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW()
-    );
+  const prisma = new PrismaClient({ datasources: { db: { url } } });
+  await prisma.$connect();
 
-    CREATE TABLE "Product" (
-      "id" UUID PRIMARY KEY,
-      "name" TEXT NOT NULL,
-      "description" TEXT NOT NULL,
-      "sku" TEXT UNIQUE NOT NULL,
-      "priceCents" INTEGER NOT NULL,
-      "stock" INTEGER NOT NULL,
-      "isActive" BOOLEAN NOT NULL DEFAULT true,
-      "imageUrl" TEXT,
-      "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
-      "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW()
-    );
+  await prisma.$transaction([
+    prisma.orderItem.deleteMany(),
+    prisma.order.deleteMany(),
+    prisma.product.deleteMany(),
+    prisma.user.deleteMany(),
+  ]);
 
-    CREATE TABLE "Order" (
-      "id" UUID PRIMARY KEY,
-      "customerId" UUID NOT NULL REFERENCES "User"("id"),
-      "status" "OrderStatus" NOT NULL,
-      "totalCents" INTEGER NOT NULL,
-      "failureReason" TEXT,
-      "idempotencyKey" TEXT UNIQUE NOT NULL,
-      "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
-      "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW()
-    );
-
-    CREATE TABLE "OrderItem" (
-      "id" UUID PRIMARY KEY,
-      "orderId" UUID NOT NULL REFERENCES "Order"("id") ON DELETE CASCADE,
-      "productId" UUID NOT NULL REFERENCES "Product"("id"),
-      "productName" TEXT NOT NULL,
-      "quantity" INTEGER NOT NULL,
-      "priceCents" INTEGER NOT NULL,
-      "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
-      "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW()
-    );
-
-    CREATE INDEX "OrderItem_orderId_idx" ON "OrderItem" ("orderId");
-    CREATE INDEX "OrderItem_productId_idx" ON "OrderItem" ("productId");
-  `);
-
-  const adapter = new PrismaPg(db.adapters.createPg());
-  const prisma = new PrismaClient({ datasources: { db: { url: 'postgresql://user:pass@localhost:5432/db' } } });
+  try {
+    await prisma.$executeRawUnsafe(`
+      DO $$
+      DECLARE
+        rec RECORD;
+      BEGIN
+        FOR rec IN
+          SELECT sequence_name
+          FROM information_schema.sequences
+          WHERE sequence_schema = current_schema()
+        LOOP
+          EXECUTE format('ALTER SEQUENCE %s RESTART WITH 1', rec.sequence_name);
+        END LOOP;
+      END;
+      $$;
+    `);
+  } catch (error) {
+    if (!process.env.JEST_WORKER_ID) {
+      console.warn('Warning: unable to reset database sequences.', error);
+    }
+  }
 
   return prisma;
 }

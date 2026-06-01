@@ -44,8 +44,8 @@ export const SWAGGER_DOCUMENTATION: SwaggerDocConfig = {
         en: 'CaseCellShop Checkout API',
       },
       description: {
-        pt: 'Documentação oficial da API de checkout resiliente, incluindo catálogos, pedidos e simulação de ERP.',
-        en: 'Official resilient checkout API documentation covering catalog, orders, and ERP simulation.',
+        pt: 'Documentação oficial da API de checkout resiliente, incluindo catálogos, pedidos, simulação de ERP, CORS restrito e rate limiting global.',
+        en: 'Official resilient checkout API documentation covering catalog, orders, ERP simulation, hardened CORS, and global rate limiting.',
       },
     },
     en: {
@@ -56,8 +56,8 @@ export const SWAGGER_DOCUMENTATION: SwaggerDocConfig = {
         en: 'CaseCellShop Checkout API',
       },
       description: {
-        pt: 'Referência bilingue para integração com a API de checkout.',
-        en: 'Bilingual reference for integrating with the checkout API.',
+        pt: 'Referência bilingue para integração com a API de checkout com CORS controlado, cabeçalhos seguros e rate limiting configurável.',
+        en: 'Bilingual reference for integrating with the checkout API featuring controlled CORS, hardened headers, and configurable rate limiting.',
       },
     },
   },
@@ -206,6 +206,16 @@ export const SWAGGER_OPERATIONS: Record<string, Record<string, SwaggerOperationC
         en: 'Issues a new token pair from a valid refresh token.',
       },
     },
+    logout: {
+      summary: {
+        pt: 'Encerrar sessão ativa',
+        en: 'Revoke active session',
+      },
+      description: {
+        pt: 'Revoga o refresh token informado e impede novas renovações até novo login.',
+        en: 'Revokes the provided refresh token and blocks further renewals until a new login.',
+      },
+    },
   },
   health: {
     check: {
@@ -336,17 +346,39 @@ export const SWAGGER_RESPONSES: Record<string, Record<string, SwaggerResponseCon
         pt: 'Dados inválidos ou e-mail já utilizado.',
         en: 'Invalid data or e-mail already in use.',
       },
+      throttled: {
+        pt: 'Muitas tentativas consecutivas. Aguarde alguns instantes antes de tentar novamente.',
+        en: 'Too many consecutive attempts. Please wait a moment before retrying.',
+      },
     },
     login: {
       ok: {
         pt: 'Autenticação realizada com sucesso.',
         en: 'Authentication completed successfully.',
       },
+      throttled: {
+        pt: 'Muitas tentativas de login em sequência. Aguarde alguns instantes e tente novamente.',
+        en: 'Too many login attempts in a short window. Wait a few seconds before trying again.',
+      },
     },
     refresh: {
       ok: {
         pt: 'Novo token emitido com sucesso.',
         en: 'New token issued successfully.',
+      },
+      throttled: {
+        pt: 'Limite de renovação atingido temporariamente. Tente novamente em instantes.',
+        en: 'Refresh limit reached temporarily. Try again in a moment.',
+      },
+    },
+    logout: {
+      ok: {
+        pt: 'Sessão encerrada com sucesso.',
+        en: 'Session terminated successfully.',
+      },
+      throttled: {
+        pt: 'Muitas operações em sequência para o mesmo usuário. Aguarde e tente novamente.',
+        en: 'Too many sequential operations for the same user. Please wait and retry.',
       },
     },
   },
@@ -372,5 +404,21 @@ export const SWAGGER_HEADERS: Record<string, BilingualText> = {
   idempotencyKey: {
     pt: 'Chave única por tentativa de checkout, usada para garantir idempotência.',
     en: 'Unique key per checkout attempt, used to guarantee idempotency.',
+  },
+  rateLimitLimit: {
+    pt: 'Número máximo de requisições permitidas na janela configurada.',
+    en: 'Maximum number of requests allowed within the configured window.',
+  },
+  rateLimitRemaining: {
+    pt: 'Quantidade de requisições disponíveis antes de atingir o limite.',
+    en: 'Requests left before hitting the limit.',
+  },
+  rateLimitReset: {
+    pt: 'Instante em que a contagem de rate limiting será reiniciada (epoch segundos).',
+    en: 'Epoch seconds indicating when the rate limiting window resets.',
+  },
+  retryAfter: {
+    pt: 'Tempo em segundos recomendado para aguardar antes de repetir a requisição após 429.',
+    en: 'Suggested number of seconds to wait before retrying after a 429 response.',
   },
 };
