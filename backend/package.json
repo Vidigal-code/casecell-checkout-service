@@ -18,6 +18,9 @@
     "test:integration": "jest --config jest.integration.config.ts",
     "test:e2e": "jest --config jest.e2e.config.ts"
   },
+  "prisma": {
+    "seed": "node scripts/run-with-env.js npx ts-node --compiler-options '{\"module\":\"commonjs\"}' prisma/seed.ts"
+  },
   "dependencies": {
     "@nestjs/common": "^10.3.2",
     "@nestjs/config": "^3.1.1",
