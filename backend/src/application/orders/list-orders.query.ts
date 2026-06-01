@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { OrderRepository } from '@domain/order/order.repository';
 import { OrderStatus } from '@domain/order/order-status.enum';
+import { OrderRepository } from '@domain/order/order.repository';
 import { TOKENS } from '@shared/tokens';
 
 export interface ListOrdersInput {

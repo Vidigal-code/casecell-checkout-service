@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
+import Redis from 'ioredis';
 import { IdempotencyRecord, IdempotencyStore } from '@application/ports/idempotency-store';
 import { REDIS_CLIENT } from './redis.constants';
-import Redis from 'ioredis';
 
 @Injectable()
 export class RedisIdempotencyStore implements IdempotencyStore {

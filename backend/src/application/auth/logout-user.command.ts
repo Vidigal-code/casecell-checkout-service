@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ValidationError } from '@domain/common/errors';
 import { TokenService } from '@application/ports/token-service';
+import { ValidationError } from '@domain/common/errors';
 import { TOKENS } from '@shared/tokens';
 
 export interface LogoutUserInput {

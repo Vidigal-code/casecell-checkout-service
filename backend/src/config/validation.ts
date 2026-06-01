@@ -24,7 +24,9 @@ export const configValidationSchema = Joi.object({
   CORS_ALLOWED_HEADERS: Joi.string().default(
     'Accept,Accept-Language,Content-Language,Authorization,Content-Type,Idempotency-Key,Request-Id',
   ),
-  CORS_EXPOSED_HEADERS: Joi.string().default('Request-Id,Retry-After,X-RateLimit-Limit,X-RateLimit-Remaining,X-RateLimit-Reset'),
+  CORS_EXPOSED_HEADERS: Joi.string().default(
+    'Request-Id,Retry-After,X-RateLimit-Limit,X-RateLimit-Remaining,X-RateLimit-Reset',
+  ),
   CORS_ALLOWED_METHODS: Joi.string().default('GET,POST,PUT,PATCH,DELETE,OPTIONS'),
   CORS_ALLOW_CREDENTIALS: Joi.boolean().truthy('true').falsy('false').default(true),
   CORS_MAX_AGE: Joi.number().min(0).default(600),

@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { TokenPair, TokenService } from '../ports/token-service';
 import { TOKENS } from '@shared/tokens';
+import { TokenPair, TokenService } from '../ports/token-service';
 
 @Injectable()
 export class RefreshTokenCommand {

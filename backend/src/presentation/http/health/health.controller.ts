@@ -1,10 +1,14 @@
 import { Controller, Get, Inject } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import Redis from 'ioredis';
 import { PrismaService } from '@infrastructure/prisma/prisma.service';
 import { REDIS_CLIENT } from '@infrastructure/redis/redis.constants';
-import Redis from 'ioredis';
+import {
+  SWAGGER_OPERATIONS,
+  SWAGGER_RESPONSES,
+  SWAGGER_TAGS,
+} from '@presentation/http/docs/swagger.i18n';
 import { inline, multiline } from '@shared/i18n/bilingual';
-import { SWAGGER_OPERATIONS, SWAGGER_RESPONSES, SWAGGER_TAGS } from '@presentation/http/docs/swagger.i18n';
 
 type HealthStatus = 'up' | 'down';
 interface HealthChecks {
@@ -62,6 +66,8 @@ export class HealthController {
   }
 
   private static resolveComponentStatus(result: PromiseSettledResult<unknown>): HealthStatus {
-    return result.status === 'fulfilled' ? HealthController.COMPONENT_UP : HealthController.COMPONENT_DOWN;
+    return result.status === 'fulfilled'
+      ? HealthController.COMPONENT_UP
+      : HealthController.COMPONENT_DOWN;
   }
 }

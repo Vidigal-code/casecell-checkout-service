@@ -1,6 +1,6 @@
+import { Role } from './role.enum';
 import { BaseEntity } from '../common/base-entity';
 import { ValidationError } from '../common/errors';
-import { Role } from './role.enum';
 
 export interface UserProps {
   email: string;

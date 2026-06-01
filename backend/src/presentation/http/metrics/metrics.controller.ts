@@ -1,9 +1,13 @@
 import { Controller, Get, Inject } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { TOKENS } from '@shared/tokens';
 import { TelemetryServiceImpl } from '@infrastructure/telemetry/telemetry.service';
+import {
+  SWAGGER_OPERATIONS,
+  SWAGGER_RESPONSES,
+  SWAGGER_TAGS,
+} from '@presentation/http/docs/swagger.i18n';
 import { inline, multiline } from '@shared/i18n/bilingual';
-import { SWAGGER_OPERATIONS, SWAGGER_RESPONSES, SWAGGER_TAGS } from '@presentation/http/docs/swagger.i18n';
+import { TOKENS } from '@shared/tokens';
 
 @ApiTags(inline(SWAGGER_TAGS.metrics))
 @Controller('metrics')

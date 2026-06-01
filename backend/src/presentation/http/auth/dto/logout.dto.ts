@@ -8,7 +8,7 @@ export class LogoutDto {
       pt: 'Refresh token ativo retornado no login ou refresh.',
       en: 'Active refresh token provided by login or refresh.',
     }),
-    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
   })
   @IsString()
   refreshToken!: string;

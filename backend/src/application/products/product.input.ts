@@ -51,9 +51,7 @@ export const buildProductProps = (input: ProductWriteInput): ProductProps => {
     );
   }
 
-  const imageUrl = input.imageUrl?.trim()
-    ? input.imageUrl.trim()
-    : undefined;
+  const imageUrl = input.imageUrl?.trim() ? input.imageUrl.trim() : undefined;
 
   return {
     name,

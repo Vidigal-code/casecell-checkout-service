@@ -1,8 +1,7 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateProductDto } from './create-product.dto';
-import { ApiProperty } from '@nestjs/swagger';
+import { PartialType, ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 import { inline } from '@shared/i18n/bilingual';
+import { CreateProductDto } from './create-product.dto';
 
 export class UpdateProductParamsDto {
   @ApiProperty({

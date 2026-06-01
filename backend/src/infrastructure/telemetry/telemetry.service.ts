@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { TelemetryService, TelemetryCounterOptions, TelemetryDurationOptions } from '@application/ports/telemetry';
-import { Counter, Histogram, register, collectDefaultMetrics } from 'prom-client';
 import { context, trace } from '@opentelemetry/api';
+import { Counter, Histogram, register, collectDefaultMetrics } from 'prom-client';
+import {
+  TelemetryService,
+  TelemetryCounterOptions,
+  TelemetryDurationOptions,
+} from '@application/ports/telemetry';
 
 const checkoutCounter = new Counter({
   name: 'casecell_checkout_total',

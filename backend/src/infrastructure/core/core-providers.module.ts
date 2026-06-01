@@ -1,14 +1,14 @@
 import { Global, Module } from '@nestjs/common';
-import { PrismaModule } from '@infrastructure/prisma/prisma.module';
-import { RedisModule } from '@infrastructure/redis/redis.module';
+import { RedisCircuitBreakerService } from '@infrastructure/circuit-breaker/redis-circuit-breaker.service';
+import { ErpSimulatorService } from '@infrastructure/erp/erp-simulator.service';
+import { PinoLoggerService } from '@infrastructure/logger/pino-logger.service';
 import { PrismaOrderRepository } from '@infrastructure/order/prisma-order.repository';
+import { PrismaModule } from '@infrastructure/prisma/prisma.module';
 import { PrismaProductRepository } from '@infrastructure/product/prisma-product.repository';
 import { RedisProductsCache } from '@infrastructure/product/redis-products.cache';
 import { RedisIdempotencyStore } from '@infrastructure/redis/redis-idempotency.store';
 import { RedisLockManager } from '@infrastructure/redis/redis-lock.manager';
-import { ErpSimulatorService } from '@infrastructure/erp/erp-simulator.service';
-import { PinoLoggerService } from '@infrastructure/logger/pino-logger.service';
-import { RedisCircuitBreakerService } from '@infrastructure/circuit-breaker/redis-circuit-breaker.service';
+import { RedisModule } from '@infrastructure/redis/redis.module';
 import { TOKENS } from '@shared/tokens';
 
 @Global()

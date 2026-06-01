@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { UserRepository } from '@domain/auth/user.repository';
 import { UnauthorizedError, ValidationError } from '@domain/common/errors';
-import { PasswordHasher } from '../ports/password-hasher';
-import { TokenPair, TokenService } from '../ports/token-service';
 import { TOKENS } from '@shared/tokens';
 import { toAuthenticatedUserDto } from './auth.presenter';
+import { PasswordHasher } from '../ports/password-hasher';
+import { TokenPair, TokenService } from '../ports/token-service';
 
 export interface AuthenticateUserInput {
   email: string;

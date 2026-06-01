@@ -1,5 +1,5 @@
-import { Order } from './order.entity';
 import { OrderStatus } from './order-status.enum';
+import { Order } from './order.entity';
 
 export interface OrderQueryParams {
   page: number;

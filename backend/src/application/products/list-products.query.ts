@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ProductRepository } from '@domain/product/product.repository';
 import { TOKENS } from '@shared/tokens';
-import { ProductsCache } from './products-cache';
-import { PaginatedProductsDto } from './dto/product.dto';
 import { ListProductsInputDto } from './dto/list-products-input.dto';
+import { PaginatedProductsDto } from './dto/product.dto';
 import { toProductDto } from './product.presenter';
+import { ProductsCache } from './products-cache';
 
 export type ListProductsInput = ListProductsInputDto;
 

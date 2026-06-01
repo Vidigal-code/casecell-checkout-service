@@ -1,5 +1,5 @@
-import { PaginatedProductsDto } from './dto/product.dto';
 import { ListProductsInputDto } from './dto/list-products-input.dto';
+import { PaginatedProductsDto } from './dto/product.dto';
 
 export interface ProductsCache {
   get(params: ListProductsInputDto): Promise<PaginatedProductsDto | null>;

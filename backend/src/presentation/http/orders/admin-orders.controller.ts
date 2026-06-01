@@ -1,13 +1,17 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ListOrdersQuery } from '@application/orders/list-orders.query';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
 import { Role } from '@domain/auth/role.enum';
-import { AdminListOrdersQueryDto } from './dto/admin-list-orders-query.dto';
+import {
+  SWAGGER_OPERATIONS,
+  SWAGGER_RESPONSES,
+  SWAGGER_TAGS,
+} from '@presentation/http/docs/swagger.i18n';
 import { inline, multiline } from '@shared/i18n/bilingual';
-import { SWAGGER_OPERATIONS, SWAGGER_RESPONSES, SWAGGER_TAGS } from '@presentation/http/docs/swagger.i18n';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Roles } from '../auth/roles.decorator';
+import { RolesGuard } from '../auth/roles.guard';
+import { AdminListOrdersQueryDto } from './dto/admin-list-orders-query.dto';
 
 @ApiTags(inline(SWAGGER_TAGS.adminOrders))
 @ApiBearerAuth()

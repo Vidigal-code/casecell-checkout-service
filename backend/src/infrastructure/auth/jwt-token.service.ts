@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { TokenPair, TokenService } from '@application/ports/token-service';
-import { TokenRevocationStore } from '@application/ports/token-revocation-store';
-import { TOKENS } from '@shared/tokens';
-import { UnauthorizedError } from '@domain/common/errors';
+import { JwtService } from '@nestjs/jwt';
 import { createHash } from 'crypto';
+import { TokenRevocationStore } from '@application/ports/token-revocation-store';
+import { TokenPair, TokenService } from '@application/ports/token-service';
+import { UnauthorizedError } from '@domain/common/errors';
+import { TOKENS } from '@shared/tokens';
 
 @Injectable()
 export class JwtTokenService implements TokenService {

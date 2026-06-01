@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
-import { REDIS_CLIENT } from '../redis/redis.constants';
-import { ProductsCache } from '@application/products/products-cache';
-import { PaginatedProductsDto } from '@application/products/dto/product.dto';
 import { ListProductsInputDto } from '@application/products/dto/list-products-input.dto';
+import { PaginatedProductsDto } from '@application/products/dto/product.dto';
+import { ProductsCache } from '@application/products/products-cache';
+import { REDIS_CLIENT } from '../redis/redis.constants';
 
 @Injectable()
 export class RedisProductsCache implements ProductsCache {

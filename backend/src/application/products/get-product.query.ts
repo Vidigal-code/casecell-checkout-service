@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { TOKENS } from '@shared/tokens';
-import { ProductRepository } from '@domain/product/product.repository';
 import { ValidationError } from '@domain/common/errors';
+import { ProductRepository } from '@domain/product/product.repository';
 import { inline } from '@shared/i18n/bilingual';
+import { TOKENS } from '@shared/tokens';
 import { toAdminProductDto, ProductAdminDto } from './product.presenter';
 
 @Injectable()

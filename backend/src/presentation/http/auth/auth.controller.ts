@@ -1,15 +1,19 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthenticateUserCommand } from '@application/auth/authenticate-user.command';
+import { LogoutUserCommand } from '@application/auth/logout-user.command';
 import { RefreshTokenCommand } from '@application/auth/refresh-token.command';
 import { RegisterUserCommand } from '@application/auth/register-user.command';
-import { LogoutUserCommand } from '@application/auth/logout-user.command';
+import {
+  SWAGGER_OPERATIONS,
+  SWAGGER_RESPONSES,
+  SWAGGER_TAGS,
+} from '@presentation/http/docs/swagger.i18n';
+import { inline, multiline } from '@shared/i18n/bilingual';
 import { LoginDto } from './dto/login.dto';
+import { LogoutDto } from './dto/logout.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { RegisterDto } from './dto/register.dto';
-import { LogoutDto } from './dto/logout.dto';
-import { inline, multiline } from '@shared/i18n/bilingual';
-import { SWAGGER_OPERATIONS, SWAGGER_RESPONSES, SWAGGER_TAGS } from '@presentation/http/docs/swagger.i18n';
 
 @ApiTags(inline(SWAGGER_TAGS.auth))
 @Controller('auth')

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { OrderRepository, OrderQueryParams, PaginatedOrders } from '@domain/order/order.repository';
 import { Order } from '@domain/order/order.entity';
+import { OrderRepository, OrderQueryParams, PaginatedOrders } from '@domain/order/order.repository';
 import { OrderMapper } from './order.mapper';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class PrismaOrderRepository implements OrderRepository {

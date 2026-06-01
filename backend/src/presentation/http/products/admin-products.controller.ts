@@ -1,19 +1,33 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { inline, multiline } from '@shared/i18n/bilingual';
-import { SWAGGER_OPERATIONS, SWAGGER_RESPONSES, SWAGGER_TAGS } from '@presentation/http/docs/swagger.i18n';
-import { JwtAuthGuard } from '@presentation/http/auth/jwt-auth.guard';
-import { RolesGuard } from '@presentation/http/auth/roles.guard';
-import { Roles } from '@presentation/http/auth/roles.decorator';
-import { Role } from '@domain/auth/role.enum';
 import { CreateProductCommand } from '@application/products/create-product.command';
-import { UpdateProductCommand } from '@application/products/update-product.command';
 import { DeleteProductCommand } from '@application/products/delete-product.command';
 import { GetProductQuery } from '@application/products/get-product.query';
 import { ListAdminProductsQuery } from '@application/products/list-admin-products.query';
+import { UpdateProductCommand } from '@application/products/update-product.command';
+import { Role } from '@domain/auth/role.enum';
+import { JwtAuthGuard } from '@presentation/http/auth/jwt-auth.guard';
+import { Roles } from '@presentation/http/auth/roles.decorator';
+import { RolesGuard } from '@presentation/http/auth/roles.guard';
+import {
+  SWAGGER_OPERATIONS,
+  SWAGGER_RESPONSES,
+  SWAGGER_TAGS,
+} from '@presentation/http/docs/swagger.i18n';
+import { inline, multiline } from '@shared/i18n/bilingual';
 import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto, UpdateProductParamsDto } from './dto/update-product.dto';
 import { ListProductsQueryDto } from './dto/list-products-query.dto';
+import { UpdateProductDto, UpdateProductParamsDto } from './dto/update-product.dto';
 
 @ApiTags(inline(SWAGGER_TAGS.adminProducts))
 @ApiBearerAuth()

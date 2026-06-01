@@ -1,14 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { TOKENS } from '@shared/tokens';
-import { UserRepository } from '@domain/auth/user.repository';
-import { PasswordHasher } from '../ports/password-hasher';
-import { TokenService } from '../ports/token-service';
-import { ValidationError } from '@domain/common/errors';
-import { PasswordPolicy } from './password.policy';
-import { AuthenticatedUserDto } from './authenticate-user.command';
-import { toAuthenticatedUserDto } from './auth.presenter';
 import { Role } from '@domain/auth/role.enum';
 import { User } from '@domain/auth/user.entity';
+import { UserRepository } from '@domain/auth/user.repository';
+import { ValidationError } from '@domain/common/errors';
+import { TOKENS } from '@shared/tokens';
+import { toAuthenticatedUserDto } from './auth.presenter';
+import { AuthenticatedUserDto } from './authenticate-user.command';
+import { PasswordPolicy } from './password.policy';
+import { PasswordHasher } from '../ports/password-hasher';
+import { TokenService } from '../ports/token-service';
 
 export interface RegisterUserInput {
   email: string;

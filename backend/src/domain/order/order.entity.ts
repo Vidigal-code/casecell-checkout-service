@@ -1,7 +1,7 @@
-import { BaseEntity } from '../common/base-entity';
-import { ValidationError } from '../common/errors';
 import { OrderItem } from './order-item.entity';
 import { OrderStatus } from './order-status.enum';
+import { BaseEntity } from '../common/base-entity';
+import { ValidationError } from '../common/errors';
 
 export interface OrderProps {
   customerId: string;

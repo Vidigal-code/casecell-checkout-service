@@ -13,6 +13,13 @@ module.exports = {
     'plugin:import/typescript',
     'plugin:prettier/recommended'
   ],
+  settings: {
+    'import/resolver': {
+      typescript: {
+        project: './tsconfig.json'
+      }
+    }
+  },
   rules: {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-unused-vars': [

@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { TOKENS } from '@shared/tokens';
 import { ProductRepository } from '@domain/product/product.repository';
+import { TOKENS } from '@shared/tokens';
 import { toAdminProductDto, ProductAdminDto } from './product.presenter';
 
 export interface ListAdminProductsInput {

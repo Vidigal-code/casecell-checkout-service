@@ -1,9 +1,13 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ListProductsQuery } from '@application/products/list-products.query';
-import { ListProductsQueryDto } from './dto/list-products-query.dto';
+import {
+  SWAGGER_OPERATIONS,
+  SWAGGER_RESPONSES,
+  SWAGGER_TAGS,
+} from '@presentation/http/docs/swagger.i18n';
 import { inline, multiline } from '@shared/i18n/bilingual';
-import { SWAGGER_OPERATIONS, SWAGGER_RESPONSES, SWAGGER_TAGS } from '@presentation/http/docs/swagger.i18n';
+import { ListProductsQueryDto } from './dto/list-products-query.dto';
 
 @ApiTags(inline(SWAGGER_TAGS.products))
 @Controller('products')

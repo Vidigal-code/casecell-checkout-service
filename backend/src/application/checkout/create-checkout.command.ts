@@ -1,20 +1,20 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ProductRepository } from '@domain/product/product.repository';
-import { OrderRepository } from '@domain/order/order.repository';
-import { Order } from '@domain/order/order.entity';
+import { ConflictError, NotFoundError, ValidationError } from '@domain/common/errors';
 import { OrderItem } from '@domain/order/order-item.entity';
 import { OrderStatus } from '@domain/order/order-status.enum';
-import { ConflictError, NotFoundError, ValidationError } from '@domain/common/errors';
+import { Order } from '@domain/order/order.entity';
+import { OrderRepository } from '@domain/order/order.repository';
+import { ProductRepository } from '@domain/product/product.repository';
+import { PrismaService } from '@infrastructure/prisma/prisma.service';
+import { inline } from '@shared/i18n/bilingual';
+import { TOKENS } from '@shared/tokens';
+import { CHECKOUT_MESSAGES } from './checkout.messages';
+import { EnqueueErpSyncCommand } from './enqueue-erp-sync.command';
 import { IdempotencyStore } from '../ports/idempotency-store';
 import { LockManager } from '../ports/lock-manager';
 import { AppLogger } from '../ports/logger';
 import { TelemetryService } from '../ports/telemetry';
-import { TOKENS } from '@shared/tokens';
-import { EnqueueErpSyncCommand } from './enqueue-erp-sync.command';
-import { CHECKOUT_MESSAGES } from './checkout.messages';
-import { inline } from '@shared/i18n/bilingual';
-import { PrismaService } from '@infrastructure/prisma/prisma.service';
 
 export enum CheckoutResponseStatus {
   SUCCESS = 'SUCCESS',
@@ -61,9 +61,7 @@ export class CreateCheckoutCommand {
     private readonly enqueueErpSync: EnqueueErpSyncCommand,
     private readonly configService: ConfigService,
   ) {
-    this.idempotencyTtlSeconds = Number(
-      this.configService.get('idempotency.ttlSeconds', 600),
-    );
+    this.idempotencyTtlSeconds = Number(this.configService.get('idempotency.ttlSeconds', 600));
   }
 
   async execute(input: CreateCheckoutInput): Promise<CheckoutResponseDto> {
@@ -82,7 +80,9 @@ export class CreateCheckoutCommand {
     this.telemetry.incrementCounter('checkout_total', { labels: { status: 'received' } });
     this.validateInput(input);
 
-    const existingRecord = await this.idempotencyStore.get<CheckoutResponseDto>(input.idempotencyKey);
+    const existingRecord = await this.idempotencyStore.get<CheckoutResponseDto>(
+      input.idempotencyKey,
+    );
     if (existingRecord) {
       this.logger.info('Idempotent request detected', { key: input.idempotencyKey });
       this.telemetry.incrementCounter('checkout_total', { labels: { status: 'duplicate' } });
@@ -211,7 +211,11 @@ export class CreateCheckoutCommand {
         return response;
       }
 
-      if (error instanceof ValidationError || error instanceof NotFoundError || error instanceof ConflictError) {
+      if (
+        error instanceof ValidationError ||
+        error instanceof NotFoundError ||
+        error instanceof ConflictError
+      ) {
         throw error;
       }
       this.logger.error('Checkout failed during persistence', {
@@ -248,7 +252,11 @@ export class CreateCheckoutCommand {
         message: inline(CHECKOUT_MESSAGES.unexpectedError),
       };
 
-      await this.idempotencyStore.set(input.idempotencyKey, failureResponse, this.idempotencyTtlSeconds);
+      await this.idempotencyStore.set(
+        input.idempotencyKey,
+        failureResponse,
+        this.idempotencyTtlSeconds,
+      );
       this.telemetry.incrementCounter('checkout_total', { labels: { status: 'failure' } });
       closeSpan();
       return failureResponse;

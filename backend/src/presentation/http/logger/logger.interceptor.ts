@@ -1,16 +1,10 @@
-import {
-  CallHandler,
-  ExecutionContext,
-  Injectable,
-  NestInterceptor,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor, Inject } from '@nestjs/common';
+import type { Request, Response } from 'express';
+import { randomUUID } from 'node:crypto';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { randomUUID } from 'node:crypto';
-import { Inject } from '@nestjs/common';
-import { TOKENS } from '@shared/tokens';
 import { AppLogger } from '@application/ports/logger';
-import type { Request, Response } from 'express';
+import { TOKENS } from '@shared/tokens';
 
 @Injectable()
 export class LoggerInterceptor implements NestInterceptor {

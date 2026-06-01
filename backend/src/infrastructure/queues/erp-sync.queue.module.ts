@@ -1,10 +1,10 @@
 import { Module, Global, Inject, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Queue } from 'bullmq';
+import { CoreProvidersModule } from '@infrastructure/core/core-providers.module';
 import { TOKENS } from '@shared/tokens';
 import { ErpSyncProcessor } from './erp-sync.processor';
 import { ErpSyncWorker } from './erp-sync.worker';
-import { CoreProvidersModule } from '@infrastructure/core/core-providers.module';
 
 @Global()
 @Module({

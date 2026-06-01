@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { TOKENS } from '@shared/tokens';
-import { ProductRepository } from '@domain/product/product.repository';
 import { ValidationError } from '@domain/common/errors';
-import { inline } from '@shared/i18n/bilingual';
-import { buildProductProps } from './product.input';
 import { Product } from '@domain/product/product.entity';
+import { ProductRepository } from '@domain/product/product.repository';
+import { inline } from '@shared/i18n/bilingual';
+import { TOKENS } from '@shared/tokens';
+import { buildProductProps } from './product.input';
 import { toAdminProductDto, ProductAdminDto } from './product.presenter';
 
 @Injectable()

@@ -1,6 +1,6 @@
 import { Global, Module } from '@nestjs/common';
-import { TelemetryServiceImpl } from './telemetry.service';
 import { TOKENS } from '@shared/tokens';
+import { TelemetryServiceImpl } from './telemetry.service';
 
 @Global()
 @Module({

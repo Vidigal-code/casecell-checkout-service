@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsString, Matches, MinLength } from 'class-validator';
-import { inline } from '@shared/i18n/bilingual';
 import { PASSWORD_MIN_LENGTH, PASSWORD_REGEX } from '@application/auth/password.policy';
+import { inline } from '@shared/i18n/bilingual';
 
 export class RegisterDto {
   @ApiProperty({

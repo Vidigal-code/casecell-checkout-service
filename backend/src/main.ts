@@ -1,7 +1,7 @@
-import { NestFactory } from '@nestjs/core';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
 import { AppModule } from '@presentation/app.module';
 import { setupSwaggerDocs } from '@presentation/http/docs/swagger.setup';
@@ -52,7 +52,10 @@ function configureSecurity(app: INestApplication, configService: ConfigService) 
     }),
   );
 
-  const referrerPolicy = configService.get<string>('security.headers.referrerPolicy', 'no-referrer');
+  const referrerPolicy = configService.get<string>(
+    'security.headers.referrerPolicy',
+    'no-referrer',
+  );
   if (referrerPolicy) {
     app.use(helmet.referrerPolicy({ policy: referrerPolicy as any }));
   }

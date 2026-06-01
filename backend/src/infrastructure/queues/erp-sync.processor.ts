@@ -1,17 +1,17 @@
 import { Inject } from '@nestjs/common';
-import { Job } from 'bullmq';
 import { ConfigService } from '@nestjs/config';
+import { Job } from 'bullmq';
+import { CheckoutResponseStatus } from '@application/checkout/create-checkout.command';
+import { CircuitBreakerService } from '@application/ports/circuit-breaker';
+import { ErpGateway } from '@application/ports/erp-gateway';
+import { IdempotencyStore } from '@application/ports/idempotency-store';
+import { AppLogger } from '@application/ports/logger';
+import { TelemetryService } from '@application/ports/telemetry';
+import { ProductsCache } from '@application/products/products-cache';
+import { OrderStatus } from '@domain/order/order-status.enum';
 import { OrderRepository } from '@domain/order/order.repository';
 import { ProductRepository } from '@domain/product/product.repository';
 import { TOKENS } from '@shared/tokens';
-import { ErpGateway } from '@application/ports/erp-gateway';
-import { IdempotencyStore } from '@application/ports/idempotency-store';
-import { ProductsCache } from '@application/products/products-cache';
-import { AppLogger } from '@application/ports/logger';
-import { CircuitBreakerService } from '@application/ports/circuit-breaker';
-import { TelemetryService } from '@application/ports/telemetry';
-import { CheckoutResponseStatus } from '@application/checkout/create-checkout.command';
-import { OrderStatus } from '@domain/order/order-status.enum';
 
 interface ErpSyncJobData {
   orderId: string;
@@ -59,7 +59,14 @@ export class ErpSyncProcessor {
     if (!(await this.circuitBreaker.canExecute('erp:global'))) {
       this.logger.warn('ERP circuit breaker open, aborting sync', { orderId });
       await this.circuitBreaker.recordFailure('erp:global');
-      await this.handleFailure(orderId, productId, quantity, idempotencyKey, order!, 'ERP temporariamente indisponível.');
+      await this.handleFailure(
+        orderId,
+        productId,
+        quantity,
+        idempotencyKey,
+        order!,
+        'ERP temporariamente indisponível.',
+      );
       return;
     }
 
@@ -78,12 +85,16 @@ export class ErpSyncProcessor {
 
       order.markSuccess();
       await this.orderRepository.update(order);
-      await this.idempotencyStore.set(idempotencyKey, {
-        status: CheckoutResponseStatus.SUCCESS,
-        orderId: order.id,
-        orderStatus: OrderStatus.SUCCESS,
-        message: 'Pedido confirmado com sucesso! 🎉',
-      }, this.ttlSeconds);
+      await this.idempotencyStore.set(
+        idempotencyKey,
+        {
+          status: CheckoutResponseStatus.SUCCESS,
+          orderId: order.id,
+          orderStatus: OrderStatus.SUCCESS,
+          message: 'Pedido confirmado com sucesso! 🎉',
+        },
+        this.ttlSeconds,
+      );
       await this.productsCache.invalidateAll();
       this.logger.info('Order synchronized with ERP', { orderId });
       await this.circuitBreaker.recordSuccess('erp:global');
@@ -100,7 +111,14 @@ export class ErpSyncProcessor {
         durationMs: Date.now() - start,
         labels: { result: 'failed' },
       });
-      await this.handleFailure(orderId, productId, quantity, idempotencyKey, order!, 'ERP indisponível. Tente novamente.');
+      await this.handleFailure(
+        orderId,
+        productId,
+        quantity,
+        idempotencyKey,
+        order!,
+        'ERP indisponível. Tente novamente.',
+      );
       throw error;
     }
   }
@@ -118,12 +136,16 @@ export class ErpSyncProcessor {
     }
     order.markFailure(message);
     await this.orderRepository.update(order);
-    await this.idempotencyStore.set(idempotencyKey, {
-      status: CheckoutResponseStatus.TECHNICAL_FAILURE,
-      orderId,
-      orderStatus: OrderStatus.FAILED,
-      message,
-    }, this.ttlSeconds);
+    await this.idempotencyStore.set(
+      idempotencyKey,
+      {
+        status: CheckoutResponseStatus.TECHNICAL_FAILURE,
+        orderId,
+        orderStatus: OrderStatus.FAILED,
+        message,
+      },
+      this.ttlSeconds,
+    );
     await this.productsCache.invalidateAll();
   }
 

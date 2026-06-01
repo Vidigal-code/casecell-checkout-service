@@ -1,10 +1,10 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
-import { REDIS_CLIENT } from './redis.constants';
 import { RedisIdempotencyStore } from './redis-idempotency.store';
 import { RedisLockManager } from './redis-lock.manager';
 import { RedisTokenRevocationStore } from './redis-token-revocation.store';
+import { REDIS_CLIENT } from './redis.constants';
 
 @Global()
 @Module({

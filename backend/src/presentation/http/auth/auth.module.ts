@@ -1,20 +1,20 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { AuthController } from './auth.controller';
 import { AuthenticateUserCommand } from '@application/auth/authenticate-user.command';
+import { LogoutUserCommand } from '@application/auth/logout-user.command';
 import { RefreshTokenCommand } from '@application/auth/refresh-token.command';
 import { RegisterUserCommand } from '@application/auth/register-user.command';
-import { LogoutUserCommand } from '@application/auth/logout-user.command';
-import { TOKENS } from '@shared/tokens';
-import { PrismaUserRepository } from '@infrastructure/auth/prisma-user.repository';
 import { Argon2PasswordHasher } from '@infrastructure/auth/argon2-password-hasher.service';
 import { JwtTokenService } from '@infrastructure/auth/jwt-token.service';
-import { JwtStrategy } from './jwt.strategy';
-import { JwtAuthGuard } from './jwt-auth.guard';
-import { RolesGuard } from './roles.guard';
+import { PrismaUserRepository } from '@infrastructure/auth/prisma-user.repository';
 import { RedisTokenRevocationStore } from '@infrastructure/redis/redis-token-revocation.store';
+import { TOKENS } from '@shared/tokens';
+import { AuthController } from './auth.controller';
+import { JwtAuthGuard } from './jwt-auth.guard';
+import { JwtStrategy } from './jwt.strategy';
+import { RolesGuard } from './roles.guard';
 
 @Module({
   imports: [

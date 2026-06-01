@@ -1,7 +1,7 @@
 import { Order as PrismaOrder, OrderItem as PrismaOrderItem } from '@prisma/client';
-import { Order } from '@domain/order/order.entity';
 import { OrderItem } from '@domain/order/order-item.entity';
 import { OrderStatus } from '@domain/order/order-status.enum';
+import { Order } from '@domain/order/order.entity';
 
 export class OrderMapper {
   static toDomain(order: PrismaOrder & { items: PrismaOrderItem[] }): Order {

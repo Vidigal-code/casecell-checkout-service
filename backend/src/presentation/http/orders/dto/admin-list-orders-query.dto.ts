@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
-import { OrderStatus } from '@domain/order/order-status.enum';
 import { ListOrdersInput } from '@application/orders/list-orders.query';
+import { OrderStatus } from '@domain/order/order-status.enum';
 import { inline } from '@shared/i18n/bilingual';
 
 export class AdminListOrdersQueryDto implements ListOrdersInput {

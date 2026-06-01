@@ -1,6 +1,6 @@
 import { User } from '@domain/auth/user.entity';
-import { TokenPair } from '../ports/token-service';
 import { AuthenticatedUserDto } from './authenticate-user.command';
+import { TokenPair } from '../ports/token-service';
 
 export function toAuthenticatedUserDto(user: User, tokens: TokenPair): AuthenticatedUserDto {
   return {
