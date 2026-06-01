@@ -17,7 +17,8 @@
       },
       "path": {
         "pt": "gitpagedocs/docs/versions/1.0.0/pt/index.md",
-        "en": "gitpagedocs/docs/versions/1.0.0/en/index.md"
+        "en": "gitpagedocs/docs/versions/1.0.0/en/index.md",
+        "es": "gitpagedocs/docs/versions/1.0.0/es/index.md"
       },
       "fullscreenEnabled": true,
       "blockLink": true
@@ -34,7 +35,8 @@
       },
       "path": {
         "pt": "gitpagedocs/docs/versions/1.0.0/pt/visao-geral.md",
-        "en": "gitpagedocs/docs/versions/1.0.0/en/project-overview.md"
+        "en": "gitpagedocs/docs/versions/1.0.0/en/project-overview.md",
+        "es": "gitpagedocs/docs/versions/1.0.0/es/vision-general.md"
       },
       "fullscreenEnabled": true,
       "blockLink": true
@@ -51,7 +53,8 @@
       },
       "path": {
         "pt": "gitpagedocs/docs/versions/1.0.0/pt/arquitetura.md",
-        "en": "gitpagedocs/docs/versions/1.0.0/en/architecture.md"
+        "en": "gitpagedocs/docs/versions/1.0.0/en/architecture.md",
+        "es": "gitpagedocs/docs/versions/1.0.0/es/arquitectura.md"
       },
       "fullscreenEnabled": true,
       "blockLink": true
@@ -68,7 +71,8 @@
       },
       "path": {
         "pt": "gitpagedocs/docs/versions/1.0.0/pt/backend.md",
-        "en": "gitpagedocs/docs/versions/1.0.0/en/backend.md"
+        "en": "gitpagedocs/docs/versions/1.0.0/en/backend.md",
+        "es": "gitpagedocs/docs/versions/1.0.0/es/backend.md"
       },
       "fullscreenEnabled": true,
       "blockLink": true
@@ -85,7 +89,8 @@
       },
       "path": {
         "pt": "gitpagedocs/docs/versions/1.0.0/pt/frontend.md",
-        "en": "gitpagedocs/docs/versions/1.0.0/en/frontend.md"
+        "en": "gitpagedocs/docs/versions/1.0.0/en/frontend.md",
+        "es": "gitpagedocs/docs/versions/1.0.0/es/frontend.md"
       },
       "fullscreenEnabled": true,
       "blockLink": true
@@ -102,7 +107,8 @@
       },
       "path": {
         "pt": "gitpagedocs/docs/versions/1.0.0/pt/qualidade-operacoes.md",
-        "en": "gitpagedocs/docs/versions/1.0.0/en/quality-ops.md"
+        "en": "gitpagedocs/docs/versions/1.0.0/en/quality-ops.md",
+        "es": "gitpagedocs/docs/versions/1.0.0/es/calidad-operaciones.md"
       },
       "fullscreenEnabled": true,
       "blockLink": true
@@ -119,7 +125,8 @@
       },
       "path": {
         "pt": "gitpagedocs/docs/versions/1.0.0/pt/perguntas-conceituais.md",
-        "en": "gitpagedocs/docs/versions/1.0.0/en/conceptual-answers.md"
+        "en": "gitpagedocs/docs/versions/1.0.0/en/conceptual-answers.md",
+        "es": "gitpagedocs/docs/versions/1.0.0/es/preguntas-conceptuales.md"
       },
       "fullscreenEnabled": true,
       "blockLink": true

@@ -2,7 +2,7 @@
   "site": {
     "name": "Casecell Checkout Service Docs",
     "defaultLanguage": "pt",
-    "supportedLanguages": ["pt", "en"],
+    "supportedLanguages": ["pt", "en", "es"],
     "HideThemeSelector": true,
     "ThemeDefault": "slate-dark",
     "ThemeModeDefault": "dark",
@@ -36,6 +36,7 @@
       "pt": {
         "pt": "Português",
         "en": "Inglês",
+        "es": "Espanhol",
         "footerLabel": "Projeto",
         "menuOpen": "Menu",
         "menuClose": "Fechar",
@@ -60,6 +61,7 @@
       "en": {
         "pt": "Portuguese",
         "en": "English",
+        "es": "Spanish",
         "footerLabel": "Project",
         "menuOpen": "Menu",
         "menuClose": "Close",
@@ -80,6 +82,31 @@
         "lastUpdateVersionLabel": "Last updated",
         "darkMode": "Dark mode",
         "lightMode": "Light mode"
+      },
+      "es": {
+        "pt": "Portugués",
+        "en": "Inglés",
+        "es": "Español",
+        "footerLabel": "Proyecto",
+        "menuOpen": "Menú",
+        "menuClose": "Cerrar",
+        "showMenu": "Abrir menú",
+        "hideMenu": "Cerrar menú",
+        "quickNavigation": "Ctrl+K",
+        "searchOwnerLabel": "Usuario (ej: Vidigal-code)",
+        "searchRepoLabel": "Repositorio (ej: casecell-checkout-service)",
+        "searchButtonLabel": "Buscar",
+        "typeToNavigate": "Escribe para navegar...",
+        "noNavigationResults": "No se encontraron resultados.",
+        "focusMode": "Modo enfoque",
+        "versionLinksLabel": "Enlaces del repositorio",
+        "titleHeaderMenuMd": "Markdown",
+        "titleHeaderMenuVideo": "Video",
+        "titleHeaderMenuAudio": "Audio",
+        "titleHeaderMenuHtml": "Páginas",
+        "lastUpdateVersionLabel": "Última actualización",
+        "darkMode": "Modo oscuro",
+        "lightMode": "Modo claro"
       }
     }
   },
@@ -102,41 +129,50 @@
     "notFound": {
       "title": {
         "pt": "Página não encontrada",
-        "en": "Page not found"
+        "en": "Page not found",
+        "es": "Página no encontrada"
       },
       "description": {
         "pt": "A página solicitada não existe neste conjunto de documentação.",
-        "en": "The requested documentation page does not exist."
+        "en": "The requested documentation page does not exist.",
+        "es": "La página solicitada no existe en esta documentación."
       },
       "returnHome": {
         "pt": "Voltar para o início",
-        "en": "Return home"
+        "en": "Return home",
+        "es": "Volver al inicio"
       }
     },
     "navigation": {
       "previous": {
         "pt": "Anterior",
-        "en": "Previous"
+        "en": "Previous",
+        "es": "Anterior"
       },
       "next": {
         "pt": "Próximo",
-        "en": "Next"
+        "en": "Next",
+        "es": "Siguiente"
       },
       "menuOpen": {
         "pt": "Menu",
-        "en": "Menu"
+        "en": "Menu",
+        "es": "Menú"
       },
       "menuClose": {
         "pt": "Fechar",
-        "en": "Close"
+        "en": "Close",
+        "es": "Cerrar"
       },
       "browsePrev": {
         "pt": "Anterior",
-        "en": "Previous"
+        "en": "Previous",
+        "es": "Anterior"
       },
       "browseNext": {
         "pt": "Próximo",
-        "en": "Next"
+        "en": "Next",
+        "es": "Siguiente"
       }
     }
   }

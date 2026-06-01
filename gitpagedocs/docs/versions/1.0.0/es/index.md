@@ -1,34 +1,31 @@
-# Git Page Docs
+---
+title: "Casecell Checkout Service"
+description: "Documentación oficial del mini proyecto fullstack entregado para el desafío técnico CaseCellShop."
+---
 
-Git Page Docs es un runtime de documentacion multilenguaje para repositorios que incluyen la carpeta `gitpagedocs/`.
+# Casecell Checkout Service
 
-## Que entrega este proyecto
+Bienvenido a la documentación oficial de la solución presentada en el **Desafío Técnico CaseCellShop — Nivel Pleno (Fullstack)**. Este portal reúne todo el material del proyecto: contexto del case, decisiones de arquitectura, APIs, experiencia de usuario, calidad y respuestas conceptuales.
 
-- Renderizado markdown multilenguaje (`en`, `pt`, `es`)
-- Ruteo por version (`/v/:version`)
-- Sistema de temas con templates JSON
-- Ejecucion local y en GitHub Pages
-- Busqueda de repositorio + render remoto opcional
+## Cómo usar esta guía
 
-## Contrato de carpetas
+- **Visión general del case**: explica los dolores de la empresa y cómo la solución los aborda.
+- **Arquitectura y diseño**: detalla la separación de responsabilidades entre frontend, backend, base de datos, caché y simulador del ERP.
+- **Back-end**: describe endpoints, validaciones, idempotencia y simulación de fallos.
+- **Front-end**: muestra cómo la vitrina, el carrito y el checkout mantienen una UX responsiva y resiliente.
+- **Calidad y operaciones**: incluye comandos de ejecución, variables de entorno, Docker y observabilidad.
+- **Respuestas conceptuales (Parte 1.A)**: registra las respuestas escritas obligatorias del desafío.
 
-El runtime espera esta estructura:
+> ℹ️ Todo el contenido está disponible en **portugués**, **inglés** y **español**. Usa el selector de idioma para cambiar la vista.
 
-- `gitpagedocs/config.json`
-- `gitpagedocs/docs/<lang>/*.md`
-- `gitpagedocs/docs/versions/<version>/config.json`
-- `gitpagedocs/docs/versions/<version>/<lang>/*.md`
-- `gitpagedocs/layouts/layoutsConfig.json`
-- `gitpagedocs/layouts/templates/*.json`
+## Repositorio público
 
-## Navegacion rapida
+Código fuente: <https://github.com/Vidigal-code/casecell-checkout-service>
 
-- Abre **Primeros pasos** para setup local.
-- Abre **Configuracion** para detalle completo de `config.json`.
-- Abre **Publicacion** para comportamiento local/produccion/GitHub Pages.
-- Abre **Arquitectura** para mapa de codigo y flujo de datos.
-- Abre **Temas y layouts** para creacion de templates.
-- Abre **Rutas autorizadas** para configurar clave, roles y autenticacion externa.
-- Abre **FAQ** para troubleshooting.
+## Datos rápidos
 
-> Version (ES): 1.0.0
+- **Stack**: NestJS, Prisma, PostgreSQL, Redis, BullMQ, Next.js 15, React Query, Tailwind CSS.
+- **Objetivo**: entregar un flujo de checkout resiliente, desacoplado del ERP, evitando overselling y preservando la confianza del usuario.
+- **Entrega**: APIs completas, frontend listo para producción, documentación multilingüe, tests automatizados y scripts Docker.
+
+¿Listo para comenzar? Continúa con la sección “Visión general del case”.
