@@ -7,7 +7,7 @@ POSTGRES_USER=casecell
 POSTGRES_PASSWORD=casecell
 POSTGRES_DB=casecell
 POSTGRES_PORT=5432
-DATABASE_URL=postgresql://casecell:casecell@localhost:5432/casecell
+DATABASE_URL=postgresql://casecell:casecell@postgres:5432/casecell
 TEST_DATABASE_URL=postgresql://casecell:casecell@localhost:5432/casecell_test
 
 # Redis
@@ -57,4 +57,4 @@ CUSTOMER_PASSWORD=Cliente12345@
 
 # Ports
 BACKEND_PORT=3001
-FRONTEND_PORT=3000
+
