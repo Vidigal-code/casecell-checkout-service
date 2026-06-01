@@ -11,7 +11,35 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { Button } from '@/shared/ui/button';
 
 const PAGE_SIZE = 10;
-const STATUS_OPTIONS = ['PENDING', 'PROCESSING', 'SUCCESS', 'FAILED'];
+const STATUS_META: Record<string, { label: string; badgeClass: string }> = {
+  PENDING: {
+    label: 'Pendente',
+    badgeClass:
+      'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-200 border border-amber-200/70 dark:border-amber-400/30',
+  },
+  PROCESSING: {
+    label: 'Processando',
+    badgeClass:
+      'bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-200 border border-sky-200/70 dark:border-sky-400/30',
+  },
+  SUCCESS: {
+    label: 'Concluído',
+    badgeClass:
+      'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-200 border border-emerald-200/70 dark:border-emerald-400/30',
+  },
+  FAILED: {
+    label: 'Falhou',
+    badgeClass:
+      'bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-200 border border-rose-200/70 dark:border-rose-400/30',
+  },
+};
+
+const STATUS_OPTIONS = [
+  { value: 'PENDING', label: STATUS_META.PENDING.label },
+  { value: 'PROCESSING', label: STATUS_META.PROCESSING.label },
+  { value: 'SUCCESS', label: STATUS_META.SUCCESS.label },
+  { value: 'FAILED', label: STATUS_META.FAILED.label },
+];
 
 export function AdminOrdersPage() {
   const user = useAppSelector(selectAuthUser);
@@ -42,38 +70,42 @@ export function AdminOrdersPage() {
   return (
     <section className="space-y-8">
       <header className="rounded-3xl border border-neutral-200 bg-white/95 p-6 shadow-lg transition-colors dark:border-neutral-700 dark:bg-neutral-900/70 dark:shadow-black/40">
-        <h2 className="font-display text-2xl text-neutral-900 dark:text-slate-100">Pedidos recentes</h2>
-        <p className="mt-2 text-sm text-neutral-500 dark:text-slate-300">
-          Acompanhe pedidos em processamento, identifique falhas e monitore a fila de sincronização com o ERP.
-        </p>
-        <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-3">
-            <label
-              htmlFor="status-filter"
-              className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-slate-400"
-            >
-              Status
-            </label>
-            <select
-              id="status-filter"
-              value={status ?? ''}
-              onChange={(event) => {
-                setPage(1);
-                setStatus(event.target.value || undefined);
-              }}
-              className="rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm text-neutral-600 focus:outline-none focus:ring-2 focus:ring-brand-primary/30 dark:border-neutral-700 dark:bg-neutral-900 dark:text-slate-200"
-            >
-              <option value="">Todos</option>
-              {STATUS_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h2 className="font-display text-2xl text-neutral-900 dark:text-slate-100">Pedidos recentes</h2>
+            <p className="mt-2 text-sm text-neutral-500 dark:text-slate-300">
+              Acompanhe pedidos em processamento, identifique falhas e monitore a fila de sincronização com o ERP.
+            </p>
           </div>
-          <Button type="button" variant="secondary" onClick={() => refetch()}>
-            Atualizar agora
-          </Button>
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-end sm:justify-end">
+            <div className="flex w-full flex-col gap-2 sm:max-w-xs">
+              <label
+                htmlFor="status-filter"
+                className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-neutral-500 dark:text-slate-400"
+              >
+                Status do pedido
+              </label>
+              <select
+                id="status-filter"
+                value={status ?? ''}
+                onChange={(event) => {
+                  setPage(1);
+                  setStatus(event.target.value || undefined);
+                }}
+                className="w-full rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm text-neutral-600 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:border-neutral-700 dark:bg-neutral-900 dark:text-slate-200"
+              >
+                <option value="">Todos os status</option>
+                {STATUS_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <Button type="button" variant="secondary" onClick={() => refetch()} className="w-full sm:w-auto">
+              Atualizar agora
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -109,8 +141,13 @@ export function AdminOrdersPage() {
                   </td>
                   <td className="px-4 py-3 text-neutral-600 dark:text-slate-300">{order.customerId}</td>
                   <td className="px-4 py-3">
-                    <span className="rounded-full bg-neutral-200 px-3 py-1 text-xs font-semibold text-neutral-700 dark:bg-neutral-700 dark:text-slate-200">
-                      {order.status}
+                    <span
+                      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                        STATUS_META[order.status]?.badgeClass ??
+                        'bg-neutral-200 text-neutral-700 dark:bg-neutral-700 dark:text-slate-200'
+                      }`}
+                    >
+                      {STATUS_META[order.status]?.label ?? order.status}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-neutral-600 dark:text-slate-300">
