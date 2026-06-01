@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { useState } from 'react';
+import { Smartphone } from 'lucide-react';
 import { Product } from '@/entities/product/model/types';
 import { formatCurrency } from '@/shared/lib/format-currency';
 import { Button } from '@/shared/ui/button';
@@ -32,12 +33,20 @@ export function ProductCard({ product, onSelect, isSelected, onAddToCart }: Prod
               fill
               src={product.imageUrl}
               alt={product.name}
+              sizes="(min-width: 1280px) 320px, (min-width: 768px) 45vw, 90vw"
               className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
               onError={() => setImageError(true)}
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-primary/30 to-brand-secondary/40 text-3xl font-semibold text-white">
-              {initials || 'CC'}
+            <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-gradient-to-br from-brand-primary/40 via-brand-secondary/30 to-brand-primary/40 text-white">
+              <div
+                className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.45),transparent_55%)] opacity-60"
+                aria-hidden="true"
+              />
+              <div className="relative flex flex-col items-center justify-center gap-2">
+                <Smartphone className="h-7 w-7 opacity-80" />
+                <span className="text-2xl font-semibold tracking-wide">{initials || 'CC'}</span>
+              </div>
             </div>
           )}
         </div>

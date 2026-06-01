@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from 'react';
+import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Smartphone } from 'lucide-react';
 import { fetchProducts } from '@/shared/api/products';
 import { PaginatedProducts, Product } from '@/entities/product/model/types';
 import { ProductCard } from '@/entities/product/ui/product-card';
@@ -22,6 +23,7 @@ export function ProductGrid({ onSelect, selectedProductId }: ProductGridProps) {
   const dispatch = useAppDispatch();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [previewErrorMap, setPreviewErrorMap] = useState<Record<string, boolean>>({});
 
   const { data, isPending, isError } = useQuery<PaginatedProducts>({
     queryKey: ['products', page, search],
@@ -121,12 +123,43 @@ export function ProductGrid({ onSelect, selectedProductId }: ProductGridProps) {
           {(() => {
             const product = data?.data.find((item) => item.id === selectedProductId);
             if (!product) return null;
+            const initials = product.name
+              .split(' ')
+              .slice(0, 2)
+              .map((word) => word.charAt(0).toUpperCase())
+              .join('');
+            const hasPreview = Boolean(product.imageUrl && !previewErrorMap[product.id]);
             return (
-              <ul className="mt-3 space-y-1 text-brand-primary/80 dark:text-brand-primary/70">
-                <li>Produto: {product.name}</li>
-                <li>Preço unitário: {formatCurrency(product.priceCents / 100)}</li>
-                <li>Estoque disponível: {product.stock}</li>
-              </ul>
+              <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
+                <div className="relative h-24 w-full overflow-hidden rounded-3xl bg-white/40 shadow-inner shadow-brand-primary/20 sm:h-24 sm:w-32 dark:bg-brand-primary/10 dark:shadow-brand-primary/30">
+                  {hasPreview ? (
+                    <Image
+                      fill
+                      src={product.imageUrl as string}
+                      alt={`Pré-visualização de ${product.name}`}
+                      sizes="(min-width: 1024px) 160px, 50vw"
+                      className="object-cover"
+                      onError={() =>
+                        setPreviewErrorMap((prev) => ({
+                          ...prev,
+                          [product.id]: true,
+                        }))
+                      }
+                    />
+                  ) : (
+                    <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-brand-primary/70 via-brand-secondary/60 to-brand-primary/70 text-white">
+                      <Smartphone className="h-6 w-6 opacity-80" />
+                      <span className="text-lg font-semibold tracking-wide">{initials || 'CC'}</span>
+                    </div>
+                  )}
+                </div>
+                <ul className="space-y-1 text-brand-primary/80 dark:text-brand-primary/70">
+                  <li className="text-base font-semibold text-brand-primary/90 dark:text-brand-primary/80">{product.name}</li>
+                  <li>Preço unitário: {formatCurrency(product.priceCents / 100)}</li>
+                  <li>Estoque disponível: {product.stock}</li>
+                  <li className="text-xs uppercase tracking-wide text-brand-primary/60 dark:text-brand-primary/50">SKU {product.sku}</li>
+                </ul>
+              </div>
             );
           })()}
         </aside>
