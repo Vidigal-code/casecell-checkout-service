@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Casecell Checkout Service – Documentación (ES)</title>
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <main>
+      <header class="hero">
+        <div>
+          <span class="language-card__tag">Español</span>
+          <h1>Casecell Checkout Service</h1>
+        </div>
+        <p>
+          Esta guía reúne toda la información del mini proyecto fullstack entregado para el Desafío Técnico CaseCellShop — Nivel Pleno (Fullstack): arquitectura, APIs, experiencia de usuario, calidad y respuestas conceptuales.
+        </p>
+        <nav class="language-switch">
+          <a href="../pt/index.html">Português</a>
+          <a href="../en/index.html">English</a>
+          <a class="active" href="./index.html">Español</a>
+          <a href="../index.html">Inicio</a>
+        </nav>
+      </header>
+
+      <article class="content-card">
+        <h2>Visión general del case</h2>
+        <section>
+          <h3>Contexto</h3>
+          <p>
+            CaseCellShop es una minorista ficticia de fundas para celulares. El hipercrecimiento incrementó el tráfico diario de miles a millones y puso en evidencia los límites de una arquitectura dependiente de un ERP monolítico para vitrina y checkout.
+          </p>
+          <p>
+            Dolencias principales: (1) vitrina lenta debido a llamadas síncronas al ERP; (2) ventas duplicadas cuando el stock llega a cero; (3) checkout frágil por timeouts del ERP al generar pedidos.
+          </p>
+        </section>
+
+        <section>
+          <h3>Objetivo</h3>
+          <p>
+            Construir un flujo de checkout resiliente que desacople las jornadas críticas del ERP, reduzca latencia, evite overselling y mantenga la confianza del cliente incluso ante fallas externas.
+          </p>
+        </section>
+
+        <section>
+          <h3>Estrategia</h3>
+          <ul>
+            <li>APIs dedicadas en NestJS para catálogo y checkout.</li>
+            <li>Sincronización asíncrona con el ERP usando BullMQ y un simulador de latencia/fallas.</li>
+            <li>Reservas transaccionales de inventario + locks distribuidos en Redis.</li>
+            <li>Idempotencia simple mediante el header <code>Idempotency-Key</code> persistido en Redis.</li>
+            <li>Frontend en Next.js 15 con React Query, mensajes claros y bloqueo de múltiples clics.</li>
+            <li>Observabilidad con logs estructurados, métricas Prometheus y spans OpenTelemetry.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Resultados</h3>
+          <ul>
+            <li>Vitrina responde en milisegundos con cache y paginación independientes del ERP.</li>
+            <li>Checkout confirma pedidos bajo inestabilidad y reutiliza intentos duplicados con seguridad.</li>
+            <li>Mensajes claros para éxito, validación, stock insuficiente y fallos temporales.</li>
+            <li>Documentación, pruebas y automatización preparadas para evolución continua.</li>
+          </ul>
+        </section>
+      </article>
+
+      <article class="content-card">
+        <h2>Arquitectura y diseño</h2>
+        <section>
+          <h3>Vista macro</h3>
+          <p>Next.js (FSD) → NestJS (DDD/Clean) → PostgreSQL / Redis → BullMQ + simulador ERP.</p>
+        </section>
+        <section>
+          <h3>Capas principales</h3>
+          <ul>
+            <li><strong>Frontend:</strong> componentes orientados a escenas, cache con React Query, carrito persistido, Tailwind CSS y Framer Motion.</li>
+            <li><strong>Backend:</strong> módulos NestJS con DTOs, Prisma ORM, Redis para cache/locks/idempotencia, workers BullMQ.</li>
+            <li><strong>Cola y simulador:</strong> jobs asíncronos que emulan latencia/fallas con protección mediante circuit breaker.</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Flujos críticos</h3>
+          <ol>
+            <li><strong>Catálogo:</strong> `GET /products` paginado, con búsqueda y cache Redis.</li>
+            <li><strong>Checkout:</strong> `POST /checkout` valida payloads, aplica lock Redis, registra el pedido y responde 202 con idempotencia.</li>
+            <li><strong>ERP:</strong> worker convierte pedidos de PENDING a SUCCESS/FAILED con reintentos controlados.</li>
+          </ol>
+        </section>
+      </article>
+
+      <article class="content-card">
+        <h2>Back-end</h2>
+        <section>
+          <p>
+            Construido con NestJS 10 y Prisma. Endpoints clave: `GET /products`, `POST /checkout` (idempotente) y `GET /orders/:id`. Redis protege los decrementos de inventario. El sistema diferencia errores de validación (400), conflicto de stock (409), falta de idempotencia (422) y fallos técnicos (500).
+          </p>
+          <p>
+            La sincronización con el ERP ocurre en background a través de BullMQ; el simulador puede devolver éxito inmediato, fallo temporal con backoff o fallo definitivo.
+          </p>
+        </section>
+      </article>
+
+      <article class="content-card">
+        <h2>Front-end</h2>
+        <section>
+          <p>
+            Aplicación Next.js 15 que utiliza React Query, skeletons y fallback de imágenes. El checkout evita múltiples envíos, los toasts comunican cada estado y el panel `/admin` ofrece filtros y badges localizados.
+          </p>
+        </section>
+      </article>
+
+      <article class="content-card">
+        <h2>Calidad y operaciones</h2>
+        <section>
+          <ul>
+            <li>Scripts locales (`npm run dev`, `npm run start:dev`) y Docker Compose para todo el stack.</li>
+            <li>Matriz de pruebas (unitarias, integración, e2e) descrita en el README.</li>
+            <li>Observabilidad con logs Pino, endpoint `/metrics` y trazas OpenTelemetry.</li>
+          </ul>
+        </section>
+      </article>
+
+      <article class="content-card">
+        <h2>Parte 1.A — Preguntas conceptuales</h2>
+        <section>
+          <ol>
+            <li>Desacoplar el ERP mediante un checkout service intermedio.</li>
+            <li>Garantizar consistencia con transacciones SQL y locks Redis.</li>
+            <li>Manejar la lentitud del ERP con BullMQ, reintentos y circuito de protección.</li>
+            <li>Idempotencia con el header `Idempotency-Key` almacenado en Redis.</li>
+            <li>Organizar el código con DDD/Clean para evolucionar con seguridad.</li>
+            <li>Próximos pasos: CDC del ERP, observabilidad distribuida, compensaciones y dashboards.</li>
+          </ol>
+        </section>
+      </article>
+
+      <footer>
+        Casecell Checkout Service • Desafío Técnico CaseCellShop — Nivel Pleno (Fullstack)
+      </footer>
+    </main>
+  </body>
+</html>
