@@ -1,8 +1,34 @@
 {
   "auth": {
-    "accessKeys": {},
+    "accessKeys": {
+      "docs-key": "open-gitpagedocs-docs"
+    },
     "rolesStorageKey": "git-page-docs:route-auth:roles",
-    "providers": []
+    "providers": [
+      {
+        "type": "authjs",
+        "enabled": false,
+        "sessionEndpoint": "/api/auth/session",
+        "rolesClaimPath": "user.roles"
+      },
+      {
+        "type": "clerk",
+        "enabled": false,
+        "rolesClaimPath": "claims.publicMetadata.roles"
+      },
+      {
+        "type": "firebase",
+        "enabled": false,
+        "tokenStorageKey": "git-page-docs:firebase-token",
+        "rolesClaimPath": "roles"
+      },
+      {
+        "type": "jwt",
+        "enabled": false,
+        "tokenStorageKey": "git-page-docs:jwt-token",
+        "rolesClaimPath": "roles"
+      }
+    ]
   },
   "routes-md": [
     {
@@ -17,13 +43,30 @@
         "en": "Project summary and quick links",
         "es": "Resumen del proyecto y enlaces rápidos"
       },
+      "titleCss": "font-size: 1.85rem; font-weight: 700;",
+      "titleDarkCss": "font-size: 1.85rem; font-weight: 700; color: var(--text);",
+      "titleLightCss": "font-size: 1.85rem; font-weight: 700; color: var(--text);",
+      "titlePosition": "center",
+      "titleIsVisible": true,
+      "descriptionCss": "font-size: 1.2rem; font-weight: 500;",
+      "descriptionDarkCss": "font-size: 1.2rem; font-weight: 500; color: var(--text-secondary);",
+      "descriptionLightCss": "font-size: 1.2rem; font-weight: 500; color: var(--text-secondary);",
+      "descriptionPosition": "center",
+      "descriptionIsVisible": true,
       "path": {
         "pt": "gitpagedocs/docs/versions/1.0.0/pt/index.md",
         "en": "gitpagedocs/docs/versions/1.0.0/en/index.md",
         "es": "gitpagedocs/docs/versions/1.0.0/es/index.md"
       },
       "fullscreenEnabled": true,
-      "blockLink": true
+      "marginTop": "",
+      "marginBottom": "",
+      "blockLink": true,
+      "browseAll": false,
+      "RouteguideBrand": true,
+      "RouteGuideSpeciFicbrand": [],
+      "RouteguideBrandPosition": "center",
+      "RouteguideBrandContainerTop": false
     },
     {
       "id": 2,
@@ -37,13 +80,30 @@
         "en": "Context, pain points, and goals addressed",
         "es": "Contexto, problemas y objetivos cubiertos"
       },
+      "titleCss": "font-size: 1.85rem; font-weight: 700;",
+      "titleDarkCss": "font-size: 1.85rem; font-weight: 700; color: var(--text);",
+      "titleLightCss": "font-size: 1.85rem; font-weight: 700; color: var(--text);",
+      "titlePosition": "center",
+      "titleIsVisible": true,
+      "descriptionCss": "font-size: 1.2rem; font-weight: 500;",
+      "descriptionDarkCss": "font-size: 1.2rem; font-weight: 500; color: var(--text-secondary);",
+      "descriptionLightCss": "font-size: 1.2rem; font-weight: 500; color: var(--text-secondary);",
+      "descriptionPosition": "center",
+      "descriptionIsVisible": true,
       "path": {
         "pt": "gitpagedocs/docs/versions/1.0.0/pt/visao-geral.md",
         "en": "gitpagedocs/docs/versions/1.0.0/en/project-overview.md",
         "es": "gitpagedocs/docs/versions/1.0.0/es/vision-general.md"
       },
       "fullscreenEnabled": true,
-      "blockLink": true
+      "marginTop": "",
+      "marginBottom": "",
+      "blockLink": true,
+      "browseAll": false,
+      "RouteguideBrand": true,
+      "RouteGuideSpeciFicbrand": [],
+      "RouteguideBrandPosition": "center",
+      "RouteguideBrandContainerTop": false
     },
     {
       "id": 3,
@@ -57,13 +117,30 @@
         "en": "Components, flows, and technical decisions",
         "es": "Componentes, flujos y decisiones técnicas"
       },
+      "titleCss": "font-size: 1.85rem; font-weight: 700;",
+      "titleDarkCss": "font-size: 1.85rem; font-weight: 700; color: var(--text);",
+      "titleLightCss": "font-size: 1.85rem; font-weight: 700; color: var(--text);",
+      "titlePosition": "center",
+      "titleIsVisible": true,
+      "descriptionCss": "font-size: 1.2rem; font-weight: 500;",
+      "descriptionDarkCss": "font-size: 1.2rem; font-weight: 500; color: var(--text-secondary);",
+      "descriptionLightCss": "font-size: 1.2rem; font-weight: 500; color: var(--text-secondary);",
+      "descriptionPosition": "center",
+      "descriptionIsVisible": true,
       "path": {
         "pt": "gitpagedocs/docs/versions/1.0.0/pt/arquitetura.md",
         "en": "gitpagedocs/docs/versions/1.0.0/en/architecture.md",
         "es": "gitpagedocs/docs/versions/1.0.0/es/arquitectura.md"
       },
       "fullscreenEnabled": true,
-      "blockLink": true
+      "marginTop": "",
+      "marginBottom": "",
+      "blockLink": true,
+      "browseAll": false,
+      "RouteguideBrand": true,
+      "RouteGuideSpeciFicbrand": [],
+      "RouteguideBrandPosition": "center",
+      "RouteguideBrandContainerTop": false
     },
     {
       "id": 4,
@@ -77,13 +154,30 @@
         "en": "Endpoints, validations, and ERP simulation",
         "es": "Endpoints, validaciones y simulación del ERP"
       },
+      "titleCss": "font-size: 1.85rem; font-weight: 700;",
+      "titleDarkCss": "font-size: 1.85rem; font-weight: 700; color: var(--text);",
+      "titleLightCss": "font-size: 1.85rem; font-weight: 700; color: var(--text);",
+      "titlePosition": "center",
+      "titleIsVisible": true,
+      "descriptionCss": "font-size: 1.2rem; font-weight: 500;",
+      "descriptionDarkCss": "font-size: 1.2rem; font-weight: 500; color: var(--text-secondary);",
+      "descriptionLightCss": "font-size: 1.2rem; font-weight: 500; color: var(--text-secondary);",
+      "descriptionPosition": "center",
+      "descriptionIsVisible": true,
       "path": {
         "pt": "gitpagedocs/docs/versions/1.0.0/pt/backend.md",
         "en": "gitpagedocs/docs/versions/1.0.0/en/backend.md",
         "es": "gitpagedocs/docs/versions/1.0.0/es/backend.md"
       },
       "fullscreenEnabled": true,
-      "blockLink": true
+      "marginTop": "",
+      "marginBottom": "",
+      "blockLink": true,
+      "browseAll": false,
+      "RouteguideBrand": true,
+      "RouteGuideSpeciFicbrand": [],
+      "RouteguideBrandPosition": "center",
+      "RouteguideBrandContainerTop": false
     },
     {
       "id": 5,
@@ -97,13 +191,30 @@
         "en": "User experience and checkout flow",
         "es": "Experiencia de usuario y flujo de checkout"
       },
+      "titleCss": "font-size: 1.85rem; font-weight: 700;",
+      "titleDarkCss": "font-size: 1.85rem; font-weight: 700; color: var(--text);",
+      "titleLightCss": "font-size: 1.85rem; font-weight: 700; color: var(--text);",
+      "titlePosition": "center",
+      "titleIsVisible": true,
+      "descriptionCss": "font-size: 1.2rem; font-weight: 500;",
+      "descriptionDarkCss": "font-size: 1.2rem; font-weight: 500; color: var(--text-secondary);",
+      "descriptionLightCss": "font-size: 1.2rem; font-weight: 500; color: var(--text-secondary);",
+      "descriptionPosition": "center",
+      "descriptionIsVisible": true,
       "path": {
         "pt": "gitpagedocs/docs/versions/1.0.0/pt/frontend.md",
         "en": "gitpagedocs/docs/versions/1.0.0/en/frontend.md",
         "es": "gitpagedocs/docs/versions/1.0.0/es/frontend.md"
       },
       "fullscreenEnabled": true,
-      "blockLink": true
+      "marginTop": "",
+      "marginBottom": "",
+      "blockLink": true,
+      "browseAll": false,
+      "RouteguideBrand": true,
+      "RouteGuideSpeciFicbrand": [],
+      "RouteguideBrandPosition": "center",
+      "RouteguideBrandContainerTop": false
     },
     {
       "id": 6,
@@ -117,13 +228,30 @@
         "en": "Execution, testing, and observability",
         "es": "Ejecución, pruebas y observabilidad"
       },
+      "titleCss": "font-size: 1.85rem; font-weight: 700;",
+      "titleDarkCss": "font-size: 1.85rem; font-weight: 700; color: var(--text);",
+      "titleLightCss": "font-size: 1.85rem; font-weight: 700; color: var(--text);",
+      "titlePosition": "center",
+      "titleIsVisible": true,
+      "descriptionCss": "font-size: 1.2rem; font-weight: 500;",
+      "descriptionDarkCss": "font-size: 1.2rem; font-weight: 500; color: var(--text-secondary);",
+      "descriptionLightCss": "font-size: 1.2rem; font-weight: 500; color: var(--text-secondary);",
+      "descriptionPosition": "center",
+      "descriptionIsVisible": true,
       "path": {
         "pt": "gitpagedocs/docs/versions/1.0.0/pt/qualidade-operacoes.md",
         "en": "gitpagedocs/docs/versions/1.0.0/en/quality-ops.md",
         "es": "gitpagedocs/docs/versions/1.0.0/es/calidad-operaciones.md"
       },
       "fullscreenEnabled": true,
-      "blockLink": true
+      "marginTop": "",
+      "marginBottom": "",
+      "blockLink": true,
+      "browseAll": false,
+      "RouteguideBrand": true,
+      "RouteGuideSpeciFicbrand": [],
+      "RouteguideBrandPosition": "center",
+      "RouteguideBrandContainerTop": false
     },
     {
       "id": 7,
@@ -137,15 +265,153 @@
         "en": "Required answers for challenge Part 1.A",
         "es": "Respuestas obligatorias de la Parte 1.A del desafío"
       },
+      "titleCss": "font-size: 1.85rem; font-weight: 700;",
+      "titleDarkCss": "font-size: 1.85rem; font-weight: 700; color: var(--text);",
+      "titleLightCss": "font-size: 1.85rem; font-weight: 700; color: var(--text);",
+      "titlePosition": "center",
+      "titleIsVisible": true,
+      "descriptionCss": "font-size: 1.2rem; font-weight: 500;",
+      "descriptionDarkCss": "font-size: 1.2rem; font-weight: 500; color: var(--text-secondary);",
+      "descriptionLightCss": "font-size: 1.2rem; font-weight: 500; color: var(--text-secondary);",
+      "descriptionPosition": "center",
+      "descriptionIsVisible": true,
       "path": {
         "pt": "gitpagedocs/docs/versions/1.0.0/pt/perguntas-conceituais.md",
         "en": "gitpagedocs/docs/versions/1.0.0/en/conceptual-answers.md",
         "es": "gitpagedocs/docs/versions/1.0.0/es/preguntas-conceptuales.md"
       },
       "fullscreenEnabled": true,
-      "blockLink": true
+      "marginTop": "",
+      "marginBottom": "",
+      "blockLink": true,
+      "browseAll": false,
+      "RouteguideBrand": true,
+      "RouteGuideSpeciFicbrand": [],
+      "RouteguideBrandPosition": "center",
+      "RouteguideBrandContainerTop": false
     }
   ],
   "routes-html": [],
-  "routes-video": []
+  "routes-video": [],
+  "menus-header-md": [
+    {
+      "id": 1,
+      "pt": {
+        "title": "Início",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/pt/index.md"
+      },
+      "en": {
+        "title": "Home",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/en/index.md"
+      },
+      "es": {
+        "title": "Inicio",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/es/index.md"
+      }
+    },
+    {
+      "id": 2,
+      "pt": {
+        "title": "Visão geral",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/pt/visao-geral.md"
+      },
+      "en": {
+        "title": "Project overview",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/en/project-overview.md"
+      },
+      "es": {
+        "title": "Visión general",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/es/vision-general.md"
+      }
+    },
+    {
+      "id": 3,
+      "pt": {
+        "title": "Arquitetura",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/pt/arquitetura.md"
+      },
+      "en": {
+        "title": "Architecture",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/en/architecture.md"
+      },
+      "es": {
+        "title": "Arquitectura",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/es/arquitectura.md"
+      }
+    },
+    {
+      "id": 4,
+      "pt": {
+        "title": "Back-end",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/pt/backend.md"
+      },
+      "en": {
+        "title": "Back-end",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/en/backend.md"
+      },
+      "es": {
+        "title": "Back-end",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/es/backend.md"
+      }
+    },
+    {
+      "id": 5,
+      "pt": {
+        "title": "Front-end",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/pt/frontend.md"
+      },
+      "en": {
+        "title": "Front-end",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/en/frontend.md"
+      },
+      "es": {
+        "title": "Front-end",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/es/frontend.md"
+      }
+    },
+    {
+      "id": 6,
+      "pt": {
+        "title": "Qualidade",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/pt/qualidade-operacoes.md"
+      },
+      "en": {
+        "title": "Quality & ops",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/en/quality-ops.md"
+      },
+      "es": {
+        "title": "Calidad",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/es/calidad-operaciones.md"
+      }
+    },
+    {
+      "id": 7,
+      "pt": {
+        "title": "Perguntas",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/pt/perguntas-conceituais.md"
+      },
+      "en": {
+        "title": "Conceptual answers",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/en/conceptual-answers.md"
+      },
+      "es": {
+        "title": "Preguntas",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/es/preguntas-conceptuales.md"
+      }
+    }
+  ],
+  "menus-header-html": [],
+  "menus-header-video": [],
+  "hierarchyPage": {
+    "video": 0,
+    "md": 1,
+    "html": 2,
+    "audio": 3
+  },
+  "hierarchyMenu": {
+    "video": 0,
+    "md": 1,
+    "html": 2,
+    "audio": 3
+  }
 }
