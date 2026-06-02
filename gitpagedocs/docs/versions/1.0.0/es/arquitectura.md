@@ -22,8 +22,11 @@ Cliente web → Next.js 15 (React Query + Redux) → API NestJS → PostgreSQL /
 - **Backend (NestJS 10)**
   - Organización DDD / Clean Architecture (`domain`, `application`, `infrastructure`, `presentation`).
   - Controladores HTTP bajo `/api/v1`, validados con `class-validator` y `class-transformer`.
+  - Autenticación JWT con tokens de acceso/refresh y rotación automática.
+  - Guards de roles (`CUSTOMER`, `ADMIN`) aplicados mediante decoradores y guards de Nest.
   - Prisma (PostgreSQL) para productos, pedidos y registros de idempotencia.
   - Redis para locks, cache de vitrina, almacenamiento de idempotencia y colas BullMQ.
+  - Swagger bilingüe (`/docs`) sincronizado con los DTOs y casos de uso.
 
 - **Cola y simulador del ERP**
   - BullMQ procesa sincronizaciones asíncronas con el ERP.
@@ -53,6 +56,7 @@ Cliente web → Next.js 15 (React Query + Redux) → API NestJS → PostgreSQL /
 - Helmet + rate limiting protegen la API.
 - CORS configurable mediante variables (orígenes, headers, métodos permitidos).
 - Logs estructurados (Pino) con correlación por `Request-Id`.
+- Secretos JWT centralizados en `.env`, rotación de refresh tokens y rate limiting parametrizado.
 
 ## Observabilidad
 

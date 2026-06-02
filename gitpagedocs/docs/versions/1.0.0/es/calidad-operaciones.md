@@ -1,6 +1,6 @@
 ---
 title: "Calidad y operaciones"
-description: "Ejecución, variables de entorno, pruebas y observabilidad del Casecell Checkout Service."
+description: "Configuración, ejecución, pruebas y observabilidad del Casecell Checkout Service."
 ---
 
 # Calidad y operaciones
@@ -9,21 +9,21 @@ description: "Ejecución, variables de entorno, pruebas y observabilidad del Cas
 
 - Node.js 20+
 - npm 9+
-- Docker y Docker Compose (opcional pero recomendado)
-- Redis y PostgreSQL locales o via Docker
+- Docker Desktop para levantar base, cache y servicios con un solo comando
 
 ## Configuración de entorno
 
-1. Copiar plantilla:
+1. Copiar la plantilla en la raíz del repo:
    ```bash
    cp envexample.txt .env
    ```
-2. Ajustar variables clave:
-   - `DATABASE_URL`, `TEST_DATABASE_URL`
+2. Revisar las variables esenciales antes de ejecutar:
+   - `DATABASE_URL`, `TEST_DATABASE_URL` y los valores `POSTGRES_*`
    - `REDIS_HOST`, `REDIS_PORT`
-   - `NEXT_PUBLIC_API_BASE_URL`, `INTERNAL_API_BASE_URL`
-   - Parámetros del simulador ERP (`ERP_SIMULATION_*`)
-   - Secretos JWT y expiraciones de tokens
+   - Secretos JWT (`JWT_ACCESS_TOKEN_SECRET`, `JWT_REFRESH_TOKEN_SECRET`) y expiraciones
+   - Parámetros del simulador (`ERP_SIMULATION_FAILURE_RATE`, `ERP_SIMULATION_MIN_DELAY_MS`, `ERP_SIMULATION_MAX_DELAY_MS`)
+   - `IDEMPOTENCY_TTL_SECONDS`, `PRODUCTS_CACHE_TTL_SECONDS`, límites de rate limiting
+   - `NEXT_PUBLIC_API_BASE_URL`, `INTERNAL_API_BASE_URL`, `NEXT_PUBLIC_DEFAULT_THEME`
 
 ## Ejecución local
 
@@ -38,11 +38,12 @@ npm run prisma:seed
 npm run start:dev
 ```
 
-Servicios:
+Servicios disponibles:
 
-- API REST: <http://localhost:3001/api/v1>
-- Swagger PT/EN: <http://localhost:3001/docs>
+- API REST + auth: <http://localhost:3001/api/v1>
+- Swagger bilingüe: <http://localhost:3001/docs>
 - Métricas Prometheus: <http://localhost:3001/metrics>
+- Health check: <http://localhost:3001/api/v1/health>
 
 ### Frontend
 
@@ -52,7 +53,7 @@ npm install
 npm run dev
 ```
 
-UI: <http://localhost:3000>
+Vitrina y panel admin: <http://localhost:3000>
 
 ## Workflow con Docker
 
@@ -60,39 +61,46 @@ UI: <http://localhost:3000>
 docker compose up --build
 ```
 
-Levanta PostgreSQL, Redis, backend y frontend en un único comando.
+- Provisiona PostgreSQL, Redis, backend y frontend reutilizando el `.env` compartido.
+- El contenedor del backend ejecuta `prisma migrate deploy`, `prisma db push` y `prisma db seed` antes de iniciar.
+- Para ejecutar los perfiles de prueba dentro de los contenedores:
+  ```bash
+  docker compose --profile test up --build backend-tests frontend-tests
+  ```
 
 ## Pruebas automatizadas
 
 | Alcance | Comando |
 | --- | --- |
-| Backend (todos) | `npm test` |
+| Backend completo | `npm test` |
 | Backend unitario | `npm run test:unit` |
 | Backend integración | `npm run test:integration` |
 | Backend e2e | `npm run test:e2e` |
-| Frontend (todos) | `npm test` |
+| Frontend completo | `npm test` |
 | Frontend unitario | `npm run test:unit` |
 | Frontend integración | `npm run test:integration` |
 | Frontend e2e | `npm run test:e2e` |
 
-> Antes de ejecutar pruebas del backend, inicia PostgreSQL de test (`docker compose up -d postgres`) y verifica que `TEST_DATABASE_URL` apunte a `casecell_test`.
+> Antes de lanzar las pruebas del backend, asegúrate de que PostgreSQL esté arriba (`docker compose up -d postgres`) y que `TEST_DATABASE_URL` apunte a `casecell_test`.
 
-## Observabilidad
+## Observabilidad y operaciones
 
-- **Logs**: JSON con `requestId`, usuario (opcional) e Idempotency-Key.
-- **Métricas**: latencia del checkout, ratios de error, profundidad de colas BullMQ.
-- **Tracing**: spans OpenTelemetry para cada paso del checkout y del worker ERP.
+- **Logs**: Pino genera JSON con `requestId`, usuario autenticado, Idempotency-Key y duración (logging a archivo controlado por `LOG_FILE_*`).
+- **Métricas**: `/api/v1/metrics` publica histograma de latencia, ratio de errores, profundidad de cola y estado del circuito.
+- **Health**: `/api/v1/health` distingue `ok` vs `degraded`, exponiendo la salud de PostgreSQL y Redis para los health checks de Docker.
+- **Tracing**: OpenTelemetry instrumenta handlers de checkout y workers de la cola, listo para exportar vía OTLP.
+- **Swagger**: `/docs` refleja los contratos PT/EN; ejecuta `npm run build` tras modificar DTOs para mantenerlo alineado.
 
 ## Guion de validación manual
 
-1. Abrir la vitrina, revisar skeletons y fallback de imágenes.
-2. Agregar productos al carrito, variar cantidades hasta el límite de stock.
-3. Ejecutar checkout varias veces para probar idempotencia (misma clave) y fallas temporales.
-4. Seguir el pedido en `/admin` y en `/orders/:id`.
-5. Revisar métricas y logs para asegurar trazabilidad.
+1. Abrir la vitrina, validar animaciones, skeletons y búsqueda responsiva.
+2. Agregar productos al carrito, probar límites de stock y persistencia tras recargar.
+3. Autenticarse con el usuario seed, ejecutar el checkout dos veces con la misma `Idempotency-Key` y comprobar la respuesta duplicada.
+4. Ingresar a `/admin`, filtrar pedidos, desactivar/reactivar un producto y confirmar el cambio en el catálogo público.
+5. Revisar `/api/v1/metrics` y los logs para confirmar visibilidad de la simulación ERP.
 
 ## Próximos pasos sugeridos
 
-- Automatizar e2e con Playwright.
-- Configurar pipeline CI con lint, tests y build Docker.
-- Añadir dashboards para colas y métricas (Grafana/Tempo/Loki).
+- Automatizar regresiones end-to-end con Playwright o Cypress.
+- Configurar pipeline CI (GitHub Actions) con lint, pruebas y build Docker en cada PR.
+- Publicar dashboards Grafana usando métricas Prometheus y alarmas para circuito/colas.

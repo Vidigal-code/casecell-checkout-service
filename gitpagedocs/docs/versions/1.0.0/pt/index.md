@@ -16,7 +16,7 @@ Bem-vindo à documentação oficial do projeto entregue no **Desafio Técnico Ca
 - **Qualidade & operações**: traz os comandos de execução, variáveis de ambiente, Docker e observabilidade.
 - **Perguntas conceituais (Parte 1.A)**: registra as respostas exigidas no desafio.
 
-> ℹ️ Todo o conteúdo está disponível em **português** e **inglês**. Use o seletor de idioma para alternar entre as versões.
+> ℹ️ Todo o conteúdo está disponível em **português**, **inglês** e **espanhol**. Use o seletor de idioma no topo para alternar entre as versões.
 
 ## Repositório público
 

@@ -16,7 +16,7 @@ Welcome to the official documentation of the solution submitted for the **CaseCe
 - **Quality & operations**: covers run commands, environment variables, Docker setup, and observability.
 - **Conceptual answers (Part 1.A)**: stores the mandatory written answers for the challenge.
 
-> ℹ️ All sections are available both in **Portuguese** and **English**. Use the language switcher to change the locale.
+> ℹ️ Every page is available in **Portuguese**, **English**, and **Spanish**. Use the language switcher in the header to pick your locale.
 
 ## Public repository
 

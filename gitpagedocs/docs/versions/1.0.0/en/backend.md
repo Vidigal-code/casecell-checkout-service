@@ -1,94 +1,98 @@
 ---
 title: "Back-end"
-description: "Endpoints, validation rules, idempotency strategy, and ERP simulation for the Casecell Checkout Service."
+description: "Authentication, catalog, checkout, admin, and operational internals of the Casecell Checkout Service."
 ---
 
 # Back-end
 
 ## Stack
 
-- **NestJS 10** with TypeScript, modular structure, and global validation pipes.
-- **Prisma ORM** targeting PostgreSQL.
-- **Redis** for caching, distributed locks, and idempotency storage.
-- **BullMQ** to orchestrate ERP synchronization jobs.
-- **Pino** for structured JSON logs.
+- NestJS 10 (TypeScript) with modular DDD/Clean layering and global validation pipes.
+- Prisma ORM backed by PostgreSQL for users, products, orders, idempotency, and audit trails.
+- Redis 7 for caching, distributed locks, idempotency payloads, and BullMQ state.
+- BullMQ workers to orchestrate ERP synchronisation and retries.
+- Pino + OpenTelemetry + prom-client for structured logs, traces, and metrics.
+- Swagger UI with bilingual copy (`/docs`) generated directly from DTO metadata.
 
-## Core modules
+## Modules & responsibilities
 
-- `ProductsModule`: catalog listing, search, and Redis caching.
-- `CheckoutModule`: validation, stock reservation, and idempotency enforcement.
-- `OrdersModule`: exposes `GET /orders/:id` to retrieve order status.
-- `QueueModule`: configures BullMQ workers and the ERP simulator.
-- `SharedModule`: cross-cutting providers (locks, transformers, interceptors).
+- `AuthModule`: registration, login, refresh, logout, password policy, and refresh-token rotation.
+- `ProductsModule`: public catalog (`/products`) and administrative catalog management under `/admin/products`.
+- `CheckoutModule`: payload validation, stock reservation, idempotency enforcement, and job dispatching.
+- `OrdersModule`: customer order tracking (`/orders/:id`) and administrative pagination (`/admin/orders`).
+- `QueueModule`: BullMQ queue/worker, ERP simulator configuration, and circuit breaker management.
+- `SharedModule`: Redis locks, rate limiting, telemetry, exception filters, and internationalised Swagger helpers.
 
 ## HTTP endpoints
 
-### `GET /api/v1/products`
+### Authentication (`/api/v1/auth`)
 
-- **Query params**: `page`, `pageSize`, `search`.
-- **Transformers** convert strings into safe integers with defaults.
-- **Caching**: responses stored in Redis with configurable TTL.
-- **Response**:
-  ```json
-  {
-    "data": [{"id": "...", "name": "...", ...}],
-    "page": 1,
-    "pageSize": 10,
-    "total": 42
-  }
-  ```
+- `POST /register` accepts `email` and strong `password`, hashing credentials and returning access/refresh tokens plus the assigned role.
+- `POST /login` authenticates existing users and rotates refresh tokens stored in PostgreSQL.
+- `POST /refresh` issues a new access token and refresh token family, invalidating the previous refresh token.
+- `POST /logout` revokes the active refresh token and clears persisted fingerprints.
+- Responses include expiration metadata so the frontend can schedule silent refreshes.
 
-### `POST /api/v1/checkout`
+### Catalog (`/api/v1/products`)
 
-- **Required headers**: `Idempotency-Key` (unique per attempt).
-- **Payload**:
-  ```json
-  {
-    "productId": "uuid",
-    "quantity": 2,
-    "customerEmail": "optional"
-  }
-  ```
-- **Validation**:
-  - Product must exist and be active.
-  - Quantity ≥ 1 and ≤ available stock.
-  - Idempotency key is mandatory.
-- **Flow**:
-  1. Checks if the key already has a stored response → returns immediately.
-  2. Opens a Postgres transaction.
-  3. Applies a Redis lock (`checkout:lock:${productId}`) for safe stock decrement.
-  4. Reserves stock, creates the order (`status = PENDING`).
-  5. Enqueues a BullMQ job to sync with the ERP.
-  6. Returns HTTP 202 with order summary.
-- **Error mapping**:
-  - `400` – invalid payload (DTO + pipes).
-  - `409` – insufficient stock.
-  - `422` – missing idempotency key.
-  - `500` – unexpected technical failure (logged with stack + requestId).
+- Query parameters: `page`, `pageSize`, `search`. Custom transformers coerce values to safe integers with defaults.
+- Results are cached in Redis with TTL configured by `PRODUCTS_CACHE_TTL_SECONDS`, invalidated on catalog mutations.
+- Each entry surfaces stock, price (in cents), SKU, activity flag, and optional image URL used by the storefront.
 
-### `GET /api/v1/orders/:id`
+### Checkout (`/api/v1/checkout`)
 
-- Returns the latest order status (`PENDING`, `PROCESSING`, `SUCCESS`, `FAILED`).
-- Includes retry history and ERP error messages when available.
+- Requires `Authorization: Bearer <token>` with the `CUSTOMER` role and an `Idempotency-Key` header.
+- Body fields: `productId` (UUID) and `quantity` (min 1, capped by current stock).
+- Execution flow: resolve cached idempotent responses → open Postgres transaction → acquire `checkout:lock:${productId}` in Redis → reserve stock and persist order → enqueue BullMQ job → return `201 Created` with order summary.
+- Duplicate keys respond with `200 OK` and the previously stored payload. Errors map to `400` (missing header), `409` (stock), `422` (validation), `429` (rate limited), or `503` (ERP unavailable).
 
-## Idempotency
+### Order tracking (`/api/v1/orders/:id`)
 
-- Stored in Redis under `checkout:idempotency:${key}`.
-- Persists payload, HTTP status, and body.
-- Default TTL: 24h to release memory over time.
-- Shields the system from double clicks, retries, or network glitches.
+- Accessible to the owning `CUSTOMER` or any `ADMIN` through RBAC guards.
+- Returns the order status (`PENDING`, `PROCESSING`, `SUCCESS`, `FAILED`), ERP retry attempts, and last failure reason when available.
 
-## ERP simulator
+### Admin catalog (`/api/v1/admin/products`)
 
-- Configurable via environment variables (`ERP_SIMULATION_FAILURE_RATE`, min/max delays).
-- Each job randomly produces:
-  - Immediate success.
-  - Transient failure → requeued with exponential backoff.
-  - Definitive failure → order marked as `FAILED`.
-- A circuit breaker stops consecutive calls once the failure threshold is exceeded.
+- Guarded by JWT + roles; only `ADMIN` users can reach these routes.
+- `GET` paginates products with optional `search`, `page`, and `pageSize` filters for the dashboard.
+- `POST` creates products with `name`, `description`, `sku`, `priceCents`, `stock`, optional `imageUrl`, and `isActive` flag.
+- `GET /:id` retrieves complete product details, `PATCH /:id` updates partial fields, and `DELETE /:id` soft-deactivates the product (sets `isActive=false`).
+- Every mutation clears the Redis catalog cache to keep `/products` consistent.
 
-## Logs & metrics
+### Admin orders (`/api/v1/admin/orders`)
 
-- Each request receives a `Request-Id`, propagated to logs and responses.
-- `/metrics` exposes Prometheus counters (checkout latency, error ratios, queue depth).
-- Logs provide enriched JSON context (route, optional user, idempotency key).
+- Provides paginated visibility over the checkout backlog for operators.
+- Supports filtering by `status`, `customerId`, `page`, and `pageSize` (1–50) using DTO transformers.
+- Outputs order metadata, ERP state, timestamps, and retry counters used by the admin dashboard.
+
+### Platform endpoints
+
+- `GET /api/v1/health` probes PostgreSQL and Redis in parallel, returning `status: "ok"` or `"degraded"` with per-component checks.
+- `GET /api/v1/metrics` exposes Prometheus metrics (checkout latency distribution, success/error ratios, queue depth, circuit breaker state).
+- `GET /docs` serves PT/EN Swagger with language toggle, synchronized with decorators and shared i18n helpers.
+
+## Idempotency & concurrency
+
+- Redis stores responses under `checkout:idempotency:${key}` with TTL controlled by `IDEMPOTENCY_TTL_SECONDS` (default 600 seconds).
+- Product-scoped locks (`checkout:lock:${productId}`) rely on `SET NX` to serialize competing decrements.
+- Postgres transactions guarantee that stock reservations, order creation, and idempotency persistence either complete together or roll back.
+
+## ERP simulator & queues
+
+- Orders are pushed to the `erp-sync` BullMQ queue immediately after reservation.
+- The simulator uses env-driven probabilities (`ERP_SIMULATION_FAILURE_RATE`) and delays (`ERP_SIMULATION_MIN_DELAY_MS`/`MAX_DELAY_MS`) to mimic instability.
+- Consecutive failures trigger a circuit breaker (`CIRCUIT_BREAKER_FAILURE_THRESHOLD`, `CIRCUIT_BREAKER_RESET_TIMEOUT_MS`) pausing downstream calls until the cooldown expires.
+- Successful jobs mark orders as `SUCCESS`; permanent failures mark them as `FAILED` with detailed context for dashboards.
+
+## Security & observability
+
+- Helmet, CORS, and Nest Throttler provide secure headers, origin controls, and request rate limiting.
+- JWT secrets, Redis/Postgres hosts, rate-limit thresholds, and CORS policies are centralised in the root `.env` shared across services.
+- Pino logger enriches every request with `requestId`, authenticated user, idempotency key, and latency before shipping JSON logs.
+- OpenTelemetry instrumentation wraps checkout handlers and queue workers, exporting spans for distributed tracing.
+- Prometheus metrics and the health endpoint back Docker health checks and CI smoke tests.
+
+## Persistence & tooling
+
+- Prisma migrations (`npm run prisma:migrate`) evolve the schema; seeds populate sample products and users for local runs.
+- Helper scripts (`prisma:deploy`, `prisma:push`, `prisma:seed`) execute automatically inside `docker compose` flows and can be run manually during development.

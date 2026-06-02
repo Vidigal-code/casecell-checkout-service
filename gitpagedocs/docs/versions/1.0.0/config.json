@@ -9,11 +9,13 @@
       "id": 1,
       "title": {
         "pt": "Início",
-        "en": "Home"
+        "en": "Home",
+        "es": "Inicio"
       },
       "description": {
         "pt": "Resumo do projeto e links rápidos",
-        "en": "Project summary and quick links"
+        "en": "Project summary and quick links",
+        "es": "Resumen del proyecto y enlaces rápidos"
       },
       "path": {
         "pt": "gitpagedocs/docs/versions/1.0.0/pt/index.md",
@@ -27,11 +29,13 @@
       "id": 2,
       "title": {
         "pt": "Visão geral do case",
-        "en": "Project overview"
+        "en": "Project overview",
+        "es": "Visión general del case"
       },
       "description": {
         "pt": "Contexto, problemas e objetivos atendidos",
-        "en": "Context, pain points, and goals addressed"
+        "en": "Context, pain points, and goals addressed",
+        "es": "Contexto, problemas y objetivos cubiertos"
       },
       "path": {
         "pt": "gitpagedocs/docs/versions/1.0.0/pt/visao-geral.md",
@@ -45,11 +49,13 @@
       "id": 3,
       "title": {
         "pt": "Arquitetura e design",
-        "en": "Architecture & design"
+        "en": "Architecture & design",
+        "es": "Arquitectura y diseño"
       },
       "description": {
         "pt": "Componentes, fluxos e decisões técnicas",
-        "en": "Components, flows, and technical decisions"
+        "en": "Components, flows, and technical decisions",
+        "es": "Componentes, flujos y decisiones técnicas"
       },
       "path": {
         "pt": "gitpagedocs/docs/versions/1.0.0/pt/arquitetura.md",
@@ -63,11 +69,13 @@
       "id": 4,
       "title": {
         "pt": "Back-end",
-        "en": "Back-end"
+        "en": "Back-end",
+        "es": "Back-end"
       },
       "description": {
         "pt": "Endpoints, validações e simulação de ERP",
-        "en": "Endpoints, validations, and ERP simulation"
+        "en": "Endpoints, validations, and ERP simulation",
+        "es": "Endpoints, validaciones y simulación del ERP"
       },
       "path": {
         "pt": "gitpagedocs/docs/versions/1.0.0/pt/backend.md",
@@ -81,11 +89,13 @@
       "id": 5,
       "title": {
         "pt": "Front-end",
-        "en": "Front-end"
+        "en": "Front-end",
+        "es": "Front-end"
       },
       "description": {
         "pt": "Experiência do usuário e fluxo de checkout",
-        "en": "User experience and checkout flow"
+        "en": "User experience and checkout flow",
+        "es": "Experiencia de usuario y flujo de checkout"
       },
       "path": {
         "pt": "gitpagedocs/docs/versions/1.0.0/pt/frontend.md",
@@ -99,11 +109,13 @@
       "id": 6,
       "title": {
         "pt": "Qualidade e operações",
-        "en": "Quality & operations"
+        "en": "Quality & operations",
+        "es": "Calidad y operaciones"
       },
       "description": {
         "pt": "Execução, testes e observabilidade",
-        "en": "Execution, testing, and observability"
+        "en": "Execution, testing, and observability",
+        "es": "Ejecución, pruebas y observabilidad"
       },
       "path": {
         "pt": "gitpagedocs/docs/versions/1.0.0/pt/qualidade-operacoes.md",
@@ -117,11 +129,13 @@
       "id": 7,
       "title": {
         "pt": "Perguntas conceituais",
-        "en": "Conceptual answers"
+        "en": "Conceptual answers",
+        "es": "Preguntas conceptuales"
       },
       "description": {
         "pt": "Respostas da Parte 1.A do desafio",
-        "en": "Required answers for challenge Part 1.A"
+        "en": "Required answers for challenge Part 1.A",
+        "es": "Respuestas obligatorias de la Parte 1.A del desafío"
       },
       "path": {
         "pt": "gitpagedocs/docs/versions/1.0.0/pt/perguntas-conceituais.md",

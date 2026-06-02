@@ -1,6 +1,6 @@
 ---
 title: "Quality & operations"
-description: "Execution steps, environment configuration, testing strategy, and observability for the Casecell Checkout Service."
+description: "Environment setup, run books, testing matrix, and observability hooks for the Casecell Checkout Service."
 ---
 
 # Quality & operations
@@ -9,21 +9,21 @@ description: "Execution steps, environment configuration, testing strategy, and 
 
 - Node.js 20+
 - npm 9+
-- Docker & Docker Compose (optional, yet recommended)
-- Redis and PostgreSQL locally or through Docker
+- Docker Desktop (for single-command orchestration of Postgres, Redis, backend, and frontend)
 
 ## Environment setup
 
-1. Copy the sample file:
+1. Copy the root sample file and adjust credentials as needed:
    ```bash
    cp envexample.txt .env
    ```
-2. Configure the key variables:
-   - `DATABASE_URL`, `TEST_DATABASE_URL`
+2. Review the following keys before running locally or in Docker:
+   - `DATABASE_URL`, `TEST_DATABASE_URL`, `POSTGRES_*`
    - `REDIS_HOST`, `REDIS_PORT`
-   - `NEXT_PUBLIC_API_BASE_URL`, `INTERNAL_API_BASE_URL`
+   - `JWT_ACCESS_TOKEN_SECRET`, `JWT_REFRESH_TOKEN_SECRET`, expirations
    - `ERP_SIMULATION_FAILURE_RATE`, `ERP_SIMULATION_MIN_DELAY_MS`, `ERP_SIMULATION_MAX_DELAY_MS`
-   - JWT secrets and refresh/access tokens
+   - `IDEMPOTENCY_TTL_SECONDS`, `PRODUCTS_CACHE_TTL_SECONDS`, rate-limit thresholds
+   - `NEXT_PUBLIC_API_BASE_URL`, `INTERNAL_API_BASE_URL`, `NEXT_PUBLIC_DEFAULT_THEME`
 
 ## Local run
 
@@ -38,11 +38,12 @@ npm run prisma:seed
 npm run start:dev
 ```
 
-Services:
+Services exposed during development:
 
-- REST API: <http://localhost:3001/api/v1>
-- Swagger PT/EN: <http://localhost:3001/docs>
+- REST API & auth: <http://localhost:3001/api/v1>
+- Swagger (PT/EN toggle): <http://localhost:3001/docs>
 - Prometheus metrics: <http://localhost:3001/metrics>
+- Health check: <http://localhost:3001/api/v1/health>
 
 ### Frontend
 
@@ -52,46 +53,54 @@ npm install
 npm run dev
 ```
 
-UI: <http://localhost:3000>
+Storefront & admin UI: <http://localhost:3000>
 
 ## Docker workflow
 
 ```bash
+docker compose up --build
 ```
 
-Bootstraps Postgres, Redis, backend, and frontend with a single command.
+- Spins up Postgres, Redis, backend, and frontend with the shared `.env`.
+- Backend container runs `prisma migrate deploy`, `prisma db push`, and `prisma db seed` automatically.
+- To execute the test profiles inside containers:
+  ```bash
+  docker compose --profile test up --build backend-tests frontend-tests
+  ```
 
 ## Automated tests
 
 | Scope | Command |
 | --- | --- |
-| Backend (all) | `npm test` |
+| Backend full suite | `npm test` |
 | Backend unit | `npm run test:unit` |
 | Backend integration | `npm run test:integration` |
 | Backend e2e | `npm run test:e2e` |
-| Frontend (all) | `npm test` |
+| Frontend full suite | `npm test` |
 | Frontend unit | `npm run test:unit` |
 | Frontend integration | `npm run test:integration` |
 | Frontend e2e | `npm run test:e2e` |
 
-> Start the test PostgreSQL instance first (`docker compose up -d postgres`) and confirm `TEST_DATABASE_URL` targets `casecell_test` before running backend tests.
+> Before running backend tests locally, ensure Postgres is available (`docker compose up -d postgres`) and `TEST_DATABASE_URL` points to the `casecell_test` database.
 
-## Observability
+## Observability & operations
 
-- **Logs**: JSON with `requestId`, optional user, idempotency key, and duration.
-- **Metrics**: checkout latency, error ratios, BullMQ queue depth.
-- **Tracing**: OpenTelemetry spans cover every checkout and ERP worker step.
+- **Logs**: Pino outputs structured JSON enriched with `requestId`, user, idempotency key, and elapsed time; file logging is toggled via `LOG_FILE_*` envs.
+- **Metrics**: `/api/v1/metrics` exports Prometheus counters/histograms for checkout latency, queue depth, circuit breaker, and error ratios.
+- **Health**: `/api/v1/health` differentiates overall status (`ok`/`degraded`) while exposing Redis/Postgres checks used by Docker health probes.
+- **Tracing**: OpenTelemetry instrumentation emits spans for checkout handlers and ERP workers, ready to plug into OTLP collectors.
+- **Swagger**: `/docs` mirrors all DTOs and headers with bilingual descriptions; keep it updated by running `npm run build` after contract changes.
 
-## Manual validation script
+## Manual smoke checklist
 
-1. Open the storefront, review skeletons and image fallback.
-2. Add products to the cart, adjust quantities up to the stock limit.
-3. Run checkout multiple times to test idempotency (same key) and transient failures.
-4. Track the order on `/admin` and `/orders/:id`.
-5. Inspect metrics and logs to confirm traceability.
+1. Load the storefront, confirm hero animations, skeletons, and product search responsiveness.
+2. Add items to the cart, tweak quantities beyond limits to validate error messaging, and observe persisted state on reload.
+3. Authenticate with the seeded customer, trigger checkout twice with the same idempotency key, and verify duplicate handling.
+4. Flip to the admin dashboard, filter orders by status, deactivate/reactivate a product, and confirm catalog reflects the change.
+5. Inspect `/api/v1/metrics` and application logs to ensure the ERP simulator activity is observable.
 
 ## Suggested next steps
 
-- Automate end-to-end tests with Playwright.
-- Set up a CI pipeline covering lint, tests, and Docker build.
-- Add queue monitoring dashboards (Grafana/Tempo/Loki).
+- Automate end-to-end regression flows with Playwright or Cypress.
+- Wire a CI pipeline (GitHub Actions) running lint, tests, and Docker image build on pull requests.
+- Add Grafana dashboards on top of Prometheus metrics and wire alerts for circuit-breaker and queue saturation.

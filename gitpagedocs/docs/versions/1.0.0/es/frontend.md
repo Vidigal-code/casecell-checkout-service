@@ -1,65 +1,81 @@
 ---
 title: "Front-end"
-description: "Experiencia de usuario, flujo de compra y estrategias de UX aplicadas en el Casecell Checkout Service."
+description: "Experiencia, flujo de datos y panel administrativo del Casecell Checkout Service."
 ---
 
 # Front-end
 
 ## Stack
 
-- **Next.js 15** (App Router) con TypeScript.
-- **Feature-Sliced Design (FSD)** para organizar escenas, widgets, features y entidades.
-- **React Query** para cachear peticiones y gestionar loading states.
-- **Redux Toolkit + redux-persist** para el carrito y preferencias.
-- **Tailwind CSS** + **Framer Motion** para layouts responsivos y animaciones sutiles.
+- Next.js 15 (App Router) con TypeScript y soporte híbrido SSR/CSR.
+- Feature-Sliced Design para mantener escenas, widgets, features y entidades desacopladas.
+- React Query gestiona cache, sincronización y reintentos frente al backend.
+- Redux Toolkit + redux-persist almacenan sesión de auth, carrito y preferencias.
+- Cliente Axios con adjunción automática de JWT y rotación de refresh tokens vía interceptor.
+- Tailwind CSS con tokens `brand`, tipografías Space Grotesk/Work Sans y animaciones Framer Motion.
+
+## Destacados de arquitectura
+
+- `src/app` contiene las rutas (home, login, register, cart, admin) enlazadas a escenas específicas.
+- `scenes/` orquestan cada experiencia; `features/` encapsulan lógica de carrito, checkout, auth y tema.
+- `shared/` unifica cliente HTTP, normalización de entorno, store, componentes UI y utilidades.
+- `app/providers.tsx` inicializa Redux, persistencia, React Query y control de tema en un único punto.
 
 ## Pantallas principales
 
-1. **Inicio / Vitrina** (`HomeExperience`)
-   - Listado paginado con búsqueda instantánea.
-   - Skeletons y placeholders durante la carga.
-   - Fallback visual y remoto para imágenes de productos.
-   - Resumen lateral del producto seleccionado.
+1. **Inicio / Vitrina** (`scenes/home/ui/home-experience.tsx`)
+   - Hero comunica el valor del checkout resiliente con tarjetas animadas.
+   - `ProductGrid` ofrece búsqueda, paginación, skeletons y fallback de imagen con resumen lateral.
+   - Accesos rápidos para iniciar sesión o registrarse impulsan el flujo de compra.
 
-2. **Carrito y checkout**
-   - Ajuste de cantidades validado contra inventario.
-   - Resumen financiero en tiempo real.
-   - Botón de compra con bloqueo anti doble clic (loading + disabled).
+2. **Carrito y checkout** (`scenes/cart/ui/cart-scene.tsx`)
+   - Ítems persisten en localStorage, permiten ajustar cantidades limitadas por stock y muestran subtotales inmediatos.
+   - La mutación de checkout recorre cada producto, envía la cabecera de idempotencia y muestra mensajes individuales.
+   - Si no hay sesión, aparece una alerta y el botón de compra permanece deshabilitado.
 
-3. **Feedback de pedido**
-   - Mensajes claros tras `POST /checkout` (éxito, validación, stock insuficiente, fallo temporal).
-   - Opción de reintento cuando el fallo es transitorio.
-   - Acceso directo al panel `/admin` para operadores.
+3. **Flujos de autenticación** (`scenes/auth/ui`)
+   - Login y registro aplican la política de contraseñas del backend y redirigen usuarios ya autenticados.
+   - Inputs reutilizan componentes accesibles con etiquetas, helper text y errores inline.
+   - Al autenticarse, los tokens/expiraciones se guardan en Redux y el interceptor gestiona el refresh silencioso.
 
-4. **Panel administrativo** (`/admin`)
-   - Filtros por estado con paginación server-side.
-   - Badges localizadas (PT-BR) con colores significativos.
-   - Página 404 personalizada con CTA dinámico.
+4. **Panel administrativo** (`scenes/admin/ui/admin-dashboard.tsx`)
+   - Guards de rol bloquean usuarios no administradores con feedback contextual.
+   - Conmutador entre pedidos y catálogo usa paginación servidor + cache de React Query.
+   - Modal de producto cubre alta/edición con vista previa de imagen y validaciones; desactivar realiza soft delete.
+
+## Estado y flujo de datos
+
+- Un único `QueryClient` (stale time 30s, retry 1) evita tormentas de peticiones en escenarios inestables.
+- Slices de Redux (`auth`, `cart`) exponen selectores tipados; la persistencia asegura continuidad tras recargar.
+- El interceptor Axios refresca tokens una sola vez por ráfaga 401, encolando peticiones hasta obtener un nuevo token.
+- El helper de entorno normaliza URLs públicas/internas para SSR y CSR.
 
 ## Estados de UX cubiertos
 
 | Escenario | Comportamiento |
 | --- | --- |
-| Cargando | Skeletons, botones deshabilitados, texto de progreso. |
-| Éxito | Mensaje verde, carrito limpio, link para seguir el pedido. |
-| Error de validación | Indicaciones claras sobre campos requeridos o formatos inválidos. |
-| Stock insuficiente | Alerta destacada con stock actual. |
-| Fallo técnico | Mensaje amigable + opción de reintento. |
-| Intento duplicado | Reutiliza la respuesta previa (misma idempotencia). |
+| Cargando | Skeletons, placeholders con shimmer y botones deshabilitados. |
+| Éxito | Mensajes positivos, carrito vaciado y links rápidos para rastrear pedidos. |
+| Error de validación | Mensajes inline claros en formularios de checkout/auth. |
+| Stock insuficiente | Alertas destacadas y límites estrictos por producto. |
+| Fallo técnico | Mensajes amigables con opción de reintento incluso ante fallos del ERP. |
+| Intento duplicado | Reutiliza la respuesta almacenada cuando se repite la `Idempotency-Key`. |
+| Autenticación requerida | Banner de advertencia y CTA bloqueado hasta iniciar sesión. |
+| Acceso restringido | El panel avisa y bloquea cuentas sin rol `ADMIN`. |
 
 ## Accesibilidad y responsividad
 
-- Breakpoints probados en móvil, tablet y desktop.
-- `aria-labels` coherentes en formularios y botones icónicos.
-- Alto contraste tipográfico para modo claro y oscuro.
+- Grillas responsivas cubren móvil, tablet y desktop; tablas administrativas permanecen desplazables con indicaciones claras.
+- Componentes incluyen etiquetas aria, foco visible y alto contraste en ambos temas.
+- Animaciones son sutiles (fade/translate) respetando preferencias de movimiento reducido.
 
 ## Internacionalización
 
-- Copia principal en portugués brasileño.
-- Secciones críticas duplicadas en inglés y español para evaluación.
+- El contenido principal se mantiene en portugués brasileño para alinearse con el desafío.
+- Swagger, documentación y mensajes críticos disponen de equivalentes en inglés/español para revisión.
 
-## Pruebas y verificación
+## Pruebas y calidad
 
-- Unit tests con Jest + React Testing Library en componentes clave.
-- Guion manual e2e cubriendo vitrina, carrito y checkout.
-- Linter (`npm run lint`) asegura estándares de código y accesibilidad básica.
+- Jest + React Testing Library cubren escenas y widgets clave con mocks de MSW.
+- El lint (`npm run lint`) y TypeScript estricto mantienen el contrato con los tipos compartidos del backend.
+- Guion manual valida extremo a extremo checkout, idempotencia y operaciones en el panel administrativo.
