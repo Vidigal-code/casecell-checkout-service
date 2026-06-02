@@ -1,0 +1,179 @@
+{
+  "site": {
+    "name": "Casecell Checkout Service Docs",
+    "defaultLanguage": "pt",
+    "supportedLanguages": ["pt", "en", "es"],
+    "HideThemeSelector": true,
+    "ThemeDefault": "slate-dark",
+    "ThemeModeDefault": "dark",
+    "ActiveNavigation": true,
+    "FocusMode": true,
+    "FooterEnabled": true,
+    "FooterLinkName": "Casecell Checkout Service",
+    "FooterLinkUrl": "https://github.com/Vidigal-code/casecell-checkout-service",
+    "FooterDateMode": "browser",
+    "ProjectLink": "https://github.com/Vidigal-code/casecell-checkout-service",
+    "SiteIconPath": "/icon.svg",
+    "SiteHeaderName": "Casecell Checkout Service Docs",
+    "IconImageMenuHeaderReactIcones": true,
+    "IconImageMenuHeaderReactIconesTag": "FaGithubAlt",
+    "IconImageMenuHeaderReactIconesTagColorDark": "white",
+    "IconImageMenuHeaderReactIconesTagColorLight": "black",
+    "IconProjectLinkReactIcones": true,
+    "IconProjectLinkReactIconesTag": "FaGithubAlt",
+    "IconProjectLinkReactIconesTagColorDark": "white",
+    "IconProjectLinkReactIconesTagColorLight": "black",
+    "IconVersionLinksReactIcones": true,
+    "IconVersionLinksReactIconesTag": "FaCodeBranch",
+    "IconVersionLinksReactIconesTagColorDark": "white",
+    "IconVersionLinksReactIconesTagColorLight": "black",
+    "IconInfoHeaderMenuReactIcones": true,
+    "IconInfoHeaderMenuReactIconesTag": "BsInfoSquareFill",
+    "IconInfoHeaderMenuReactIconesTagColorDark": "white",
+    "IconInfoHeaderMenuReactIconesTagColorLight": "black",
+    "rendering": "https://Vidigal-code.github.io/casecell-checkout-service/",
+    "langmenu": {
+      "pt": {
+        "pt": "Português",
+        "en": "Inglês",
+        "es": "Espanhol",
+        "footerLabel": "Projeto",
+        "menuOpen": "Menu",
+        "menuClose": "Fechar",
+        "showMenu": "Abrir menu",
+        "hideMenu": "Fechar menu",
+        "quickNavigation": "Ctrl+K",
+        "searchOwnerLabel": "Usuário (ex: Vidigal-code)",
+        "searchRepoLabel": "Repositório (ex: casecell-checkout-service)",
+        "searchButtonLabel": "Buscar",
+        "typeToNavigate": "Digite para navegar...",
+        "noNavigationResults": "Nenhum resultado encontrado.",
+        "focusMode": "Modo foco",
+        "versionLinksLabel": "Links do repositório",
+        "titleHeaderMenuMd": "Markdown",
+        "titleHeaderMenuVideo": "Vídeo",
+        "titleHeaderMenuAudio": "Áudio",
+        "titleHeaderMenuHtml": "Páginas",
+        "lastUpdateVersionLabel": "Última atualização",
+        "darkMode": "Modo escuro",
+        "lightMode": "Modo claro"
+      },
+      "en": {
+        "pt": "Portuguese",
+        "en": "English",
+        "es": "Spanish",
+        "footerLabel": "Project",
+        "menuOpen": "Menu",
+        "menuClose": "Close",
+        "showMenu": "Show menu",
+        "hideMenu": "Hide menu",
+        "quickNavigation": "Ctrl+K",
+        "searchOwnerLabel": "Owner (e.g. Vidigal-code)",
+        "searchRepoLabel": "Repository (e.g. casecell-checkout-service)",
+        "searchButtonLabel": "Search",
+        "typeToNavigate": "Type to navigate...",
+        "noNavigationResults": "No results found.",
+        "focusMode": "Focus mode",
+        "versionLinksLabel": "Repository links",
+        "titleHeaderMenuMd": "Markdown",
+        "titleHeaderMenuVideo": "Video",
+        "titleHeaderMenuAudio": "Audio",
+        "titleHeaderMenuHtml": "Pages",
+        "lastUpdateVersionLabel": "Last updated",
+        "darkMode": "Dark mode",
+        "lightMode": "Light mode"
+      },
+      "es": {
+        "pt": "Portugués",
+        "en": "Inglés",
+        "es": "Español",
+        "footerLabel": "Proyecto",
+        "menuOpen": "Menú",
+        "menuClose": "Cerrar",
+        "showMenu": "Abrir menú",
+        "hideMenu": "Cerrar menú",
+        "quickNavigation": "Ctrl+K",
+        "searchOwnerLabel": "Usuario (ej: Vidigal-code)",
+        "searchRepoLabel": "Repositorio (ej: casecell-checkout-service)",
+        "searchButtonLabel": "Buscar",
+        "typeToNavigate": "Escribe para navegar...",
+        "noNavigationResults": "No se encontraron resultados.",
+        "focusMode": "Modo enfoque",
+        "versionLinksLabel": "Enlaces del repositorio",
+        "titleHeaderMenuMd": "Markdown",
+        "titleHeaderMenuVideo": "Video",
+        "titleHeaderMenuAudio": "Audio",
+        "titleHeaderMenuHtml": "Páginas",
+        "lastUpdateVersionLabel": "Última actualización",
+        "darkMode": "Modo oscuro",
+        "lightMode": "Modo claro"
+      }
+    }
+  },
+  "VersionControl": {
+    "versions": [
+      {
+        "id": "1.0.0",
+        "path": "gitpagedocs/docs/versions/1.0.0/config.json",
+        "ProjectLink": "https://github.com/Vidigal-code/casecell-checkout-service",
+        "PathConfig": "gitpagedocs/docs/versions/1.0.0/config.json",
+        "PreviewProject": "",
+        "UpdateDate": "",
+        "branch": "",
+        "release": "",
+        "commit": ""
+      }
+    ]
+  },
+  "translations": {
+    "notFound": {
+      "title": {
+        "pt": "Página não encontrada",
+        "en": "Page not found",
+        "es": "Página no encontrada"
+      },
+      "description": {
+        "pt": "A página solicitada não existe neste conjunto de documentação.",
+        "en": "The requested documentation page does not exist.",
+        "es": "La página solicitada no existe en esta documentación."
+      },
+      "returnHome": {
+        "pt": "Voltar para o início",
+        "en": "Return home",
+        "es": "Volver al inicio"
+      }
+    },
+    "navigation": {
+      "previous": {
+        "pt": "Anterior",
+        "en": "Previous",
+        "es": "Anterior"
+      },
+      "next": {
+        "pt": "Próximo",
+        "en": "Next",
+        "es": "Siguiente"
+      },
+      "menuOpen": {
+        "pt": "Menu",
+        "en": "Menu",
+        "es": "Menú"
+      },
+      "menuClose": {
+        "pt": "Fechar",
+        "en": "Close",
+        "es": "Cerrar"
+      },
+      "browsePrev": {
+        "pt": "Anterior",
+        "en": "Previous",
+        "es": "Anterior"
+      },
+      "browseNext": {
+        "pt": "Próximo",
+        "en": "Next",
+        "es": "Siguiente"
+      }
+    }
+  }
+}
