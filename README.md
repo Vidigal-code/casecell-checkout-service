@@ -1,3 +1,4 @@
+
 # CaseCellShop Checkout Service
 
 Plataforma fullstack para checkout resiliente da CaseCellShop, desacoplando o ERP legado com APIs próprias, caching inteligente e UX responsiva.
