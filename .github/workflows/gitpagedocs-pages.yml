@@ -12,27 +12,44 @@ permissions:
 
 concurrency:
   group: "pages"
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    env:
+      GITHUB_ACTIONS: "true"
+      GITHUB_REPOSITORY: ${{ github.repository }}
+      GITPAGEDOCS_REPOSITORY_SEARCH: "true"
     steps:
       - name: Checkout target repository
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Prepare runtime source
         run: |
           git clone --depth 1 https://github.com/Vidigal-code/git-page-docs.git .gitpagedocs-runtime
           cp .gitpagedocs-runtime/gitpagedocs/icon.svg /tmp/default-icon.svg 2>/dev/null || true
+          if [ -d gitpagelayouts ]; then
+            rm -rf .gitpagedocs-runtime/gitpagelayouts
+            cp -R gitpagelayouts .gitpagedocs-runtime/gitpagelayouts
+          fi
           if [ -d gitpagedocs ]; then
             rm -rf .gitpagedocs-runtime/gitpagedocs
             cp -R gitpagedocs .gitpagedocs-runtime/gitpagedocs
@@ -47,15 +64,13 @@ jobs:
           fi
 
       - name: Install runtime dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
         working-directory: .gitpagedocs-runtime
 
       - name: Build static site with target repository path
-        run: npx next build
+        run: pnpm exec next build frontend && mv frontend/out out
         working-directory: .gitpagedocs-runtime
         env:
-          GITHUB_ACTIONS: "true"
-          GITHUB_REPOSITORY: ${{ github.repository }}
           GITPAGEDOCS_PATH: "docs"
 
       - name: Relocate output to custom docs path
@@ -65,39 +80,8 @@ jobs:
           rm -rf .gitpagedocs-runtime/out
           mv .gitpagedocs-runtime/out_new .gitpagedocs-runtime/out
 
-      - name: Force root URL to docs entrypoint
-        env:
-          GITHUB_REPOSITORY: ${{ github.repository }}
-        run: |
-          node <<'NODE'
-          const fs = require('fs');
-          const path = require('path');
-          const pathSegment = "docs";
-          const repoName = (process.env.GITHUB_REPOSITORY || '').split('/')[1] || '';
-          const isUserPage = repoName.toLowerCase().endsWith('.github.io');
-          const rootRedirectBase = pathSegment;
-          const cfgPath = path.join('.gitpagedocs-runtime', 'gitpagedocs', 'config.json');
-          if (!fs.existsSync(cfgPath)) process.exit(0);
-          const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
-          const defaultVersion = cfg?.site?.docsVersion || cfg?.VersionControl?.versions?.[0]?.id || '1.1.0';
-          const defaultLang = cfg?.site?.defaultLanguage || 'en';
-          const redirectTargetRoot = rootRedirectBase
-            ? './' + rootRedirectBase + '/v/' + defaultVersion + '/?lang=' + defaultLang
-            : './v/' + defaultVersion + '/?lang=' + defaultLang;
-          const redirectTargetProject = './v/' + defaultVersion + '/?lang=' + defaultLang;
-          const rootHtml = '<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=' + redirectTargetRoot + '"/><script>window.location.replace("' + redirectTargetRoot + '" + (window.location.search || ""));</script></head><body>Redirecting...</body></html>';
-          fs.writeFileSync(path.join('.gitpagedocs-runtime', 'out', 'index.html'), rootHtml);
-          const projectPathSegments = [];
-          if (repoName && !isUserPage) projectPathSegments.push(repoName);
-          if (pathSegment) projectPathSegments.push(pathSegment);
-          if (projectPathSegments.length > 0) {
-            const projectIndexPath = path.join('.gitpagedocs-runtime', 'out', ...projectPathSegments, 'index.html');
-            if (fs.existsSync(path.dirname(projectIndexPath))) {
-              const projectHtml = '<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=' + redirectTargetProject + '"/><script>window.location.replace("' + redirectTargetProject + '" + (window.location.search || ""));</script></head><body>Redirecting...</body></html>';
-              fs.writeFileSync(projectIndexPath, projectHtml);
-            }
-          }
-          NODE
+      - name: Redirect site root to custom docs path
+        run: printf '%s' '<!doctype html><meta http-equiv="refresh" content="0; url=./docs/"><title>Redirecting</title><a href="./docs/">Documentation</a>' > .gitpagedocs-runtime/out/index.html
 
       - name: Add .nojekyll
         run: touch .gitpagedocs-runtime/out/.nojekyll 2>/dev/null || mkdir -p .gitpagedocs-runtime/out && touch .gitpagedocs-runtime/out/.nojekyll
@@ -113,7 +97,14 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
+    permissions:
+      pages: write
+      id-token: write
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          timeout: 900000
+          error_count: 30
+          reporting_interval: 10000
