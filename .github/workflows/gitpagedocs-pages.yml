@@ -29,9 +29,6 @@ jobs:
       - name: Checkout target repository
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -62,6 +59,11 @@ jobs:
           elif [ -f /tmp/default-icon.svg ]; then
             cp /tmp/default-icon.svg .gitpagedocs-runtime/public/icon.svg
           fi
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: .gitpagedocs-runtime/package.json
 
       - name: Install runtime dependencies
         run: pnpm install --frozen-lockfile
