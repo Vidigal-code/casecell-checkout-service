@@ -319,7 +319,98 @@
         "audioPopoverStatusLoopOn": "Loop activado",
         "audioPopoverStatusLoopOff": "Loop desactivado"
       }
-    }
+    },
+    "languages": {
+      "pt": true,
+      "en": true,
+      "es": true
+    },
+    "icons": {
+      "defaults": {
+        "reactIcon": true,
+        "colorDark": "White",
+        "colorLight": "black",
+        "size": "25px",
+        "imgDark": "",
+        "imgLight": "",
+        "imgWidth": 20,
+        "imgHeight": 20
+      },
+      "ImageMenuHeader": {
+        "tag": "FaShoppingBag"
+      },
+      "ProjectLink": {
+        "tag": "FaGithubAlt",
+        "size": null
+      },
+      "VersionLinks": {
+        "tag": "FaCodeBranch"
+      },
+      "InfoHeaderMenu": {
+        "tag": "BsInfoSquareFill"
+      },
+      "PreviewProjectLink": {
+        "tag": "CiGlobe"
+      },
+      "NavMenuOpen": {
+        "tag": "FaBars"
+      },
+      "NavMenuClose": {
+        "tag": "IoMdClose"
+      },
+      "NavMenuMobileOpen": {
+        "tag": "FaBars"
+      },
+      "NavMenuMobileClose": {
+        "tag": "IoMdClose"
+      },
+      "NavMenuBlockActive": {
+        "tag": "FiLock"
+      },
+      "NavMenuBlockInactive": {
+        "tag": "FiUnlock"
+      },
+      "AudioPlay": {
+        "tag": "CiPlay1",
+        "imgDark": null,
+        "imgLight": null,
+        "imgWidth": null,
+        "imgHeight": null
+      },
+      "AudioPause": {
+        "tag": "FaPause",
+        "imgDark": null,
+        "imgLight": null,
+        "imgWidth": null,
+        "imgHeight": null
+      },
+      "AudioPlayerPopoverClose": {
+        "tag": "IoClose"
+      },
+      "AudioPlayerPopoverPlay": {
+        "tag": "CiPlay1"
+      },
+      "AudioPlayerPopoverPause": {
+        "tag": "FaPause"
+      },
+      "AudioPlayerPopoverRestart": {
+        "tag": "FiRefreshCw"
+      },
+      "AudioPlayerPopoverLoopOn": {
+        "tag": "FiRepeat"
+      },
+      "AudioPlayerPopoverLoopOff": {
+        "tag": "FiRepeat"
+      }
+    },
+    "AiChatEnabled": true,
+    "AiChatAutoLockSeconds": 30,
+    "docsAccess": {
+      "enabled": false,
+      "publicKey": ""
+    },
+    "layoutsConfigPath": "",
+    "layoutsConfigPathTemplates": ""
   },
   "VersionControl": {
     "versions": [
