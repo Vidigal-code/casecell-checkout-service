@@ -1,97 +1,57 @@
----
-title: "Back-end"
-description: "Autenticação, catálogo, checkout, operações administrativas e observabilidade do Casecell Checkout Service."
----
-
 # Back-end
 
-## Stack
+Checkout de produto com reserva de estoque, pedido, idempotência e sincronização assíncrona com ERP simulado. Há catálogo, autenticação, histórico/status de pedidos e administração. A resposta inicial confirma que o pedido foi aceito para processamento; o resultado do ERP é consultado posteriormente.
 
-- NestJS 10 (TypeScript) com camadas DDD/Clean e pipes de validação globais.
-- Prisma ORM + PostgreSQL para usuários, produtos, pedidos, idempotência e trilhas de auditoria.
-- Redis 7 para cache, locks distribuídos, armazenamento de idempotência e estado das filas BullMQ.
-- BullMQ para orquestrar sincronização com o ERP, retries e circuito de proteção.
-- Pino, OpenTelemetry e prom-client para logs estruturados, rastros e métricas.
-- Swagger UI bilíngue (`/docs`) gerada a partir das anotações dos DTOs.
+## Fluxo e casos de falha
 
-## Módulos e responsabilidades
+1. Autenticação → catálogo → seleção de um productId e quantity → POST /api/v1/checkout com Bearer JWT e Idempotency-Key. Apenas CUSTOMER pode criar checkout; customerId vem do token. Chave ausente retorna 400. A quantidade e o produto passam pelo DTO e caso de uso; o preço vem do registro no banco.
 
-- `AuthModule`: cadastro, login, refresh e logout com política de senha e rotação de refresh tokens.
-- `ProductsModule`: catálogo público (`/products`) e manutenção administrativa em `/admin/products`.
-- `CheckoutModule`: validação de payload, reserva de estoque, idempotência e publicação de jobs.
-- `OrdersModule`: consulta de pedidos por cliente (`/orders/:id`) e visão administrativa paginada (`/admin/orders`).
-- `QueueModule`: configuração da fila BullMQ, worker, simulador de ERP e circuit breaker.
-- `SharedModule`: locks Redis, rate limiting, telemetria, filtros de exceção e helpers bilíngues do Swagger.
+2. Consulta resposta idempotente no Redis; se existente, devolve duplicate=true com HTTP 200. Caso contrário adquire lock:product:{id} por 5000 ms. Na transação Prisma verifica produto ativo, decrementa estoque condicionalmente com stock >= quantity e cria pedido PENDING/itens. Estoque insuficiente retorna 409; produto inexistente/inativo falha. Depois marca PROCESSING, adiciona sync-order na fila e armazena resposta por TTL configurável (padrão 600 s). Sucesso inicial é HTTP 201.
 
-## Endpoints HTTP
+3. O worker consulta pedido e circuit breaker erp:global. Gateway aprovado marca SUCCESS, atualiza resposta idempotente, invalida catálogo e registra métricas. Erro ou circuito aberto marca FAILED e tenta devolver estoque; erro do gateway é relançado. EnqueueErpSyncCommand configura attempts:1 e sem backoff: não há retry automático de negócio nesse job. Jobs falhos são preservados para inspeção.
 
-### Autenticação (`/api/v1/auth`)
+4. A interface acompanha status/histórico; administração altera produtos e consulta pedidos conforme roles. Erros técnicos após reservar estoque tentam compensar reserva e marcar pedido FAILED. Essas compensações têm logs próprios e podem falhar; verifique banco e fila antes de repetir manualmente um pedido.
 
-- `POST /register` recebe `email` e senha forte, aplica hash e devolve tokens de acesso/refresh com o perfil do usuário.
-- `POST /login` autentica usuários existentes e rotaciona o refresh token persistido no PostgreSQL.
-- `POST /refresh` gera novo par de tokens, invalidando o refresh anterior.
-- `POST /logout` revoga o refresh token ativo e limpa fingerprints salvos.
-- Respostas incluem metadados de expiração para facilitar o refresh automático no frontend.
+| Método e caminho | Declaração |
+| --- | --- |
+| `DELETE /api/v1/admin/products/:id` | [backend/src/presentation/http/products/admin-products.controller.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/products/admin-products.controller.ts) |
+| `GET /api/v1/admin/orders` | [backend/src/presentation/http/orders/admin-orders.controller.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/orders/admin-orders.controller.ts) |
+| `GET /api/v1/admin/products/:id` | [backend/src/presentation/http/products/admin-products.controller.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/products/admin-products.controller.ts) |
+| `GET /api/v1/admin/products` | [backend/src/presentation/http/products/admin-products.controller.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/products/admin-products.controller.ts) |
+| `GET /api/v1/health` | [backend/src/presentation/http/health/health.controller.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/health/health.controller.ts) |
+| `GET /api/v1/metrics` | [backend/src/presentation/http/metrics/metrics.controller.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/metrics/metrics.controller.ts) |
+| `GET /api/v1/orders/:id` | [backend/src/presentation/http/orders/orders.controller.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/orders/orders.controller.ts) |
+| `GET /api/v1/products` | [backend/src/presentation/http/products/products.controller.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/products/products.controller.ts) |
+| `PATCH /api/v1/admin/products/:id` | [backend/src/presentation/http/products/admin-products.controller.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/products/admin-products.controller.ts) |
+| `POST /api/v1/admin/products` | [backend/src/presentation/http/products/admin-products.controller.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/products/admin-products.controller.ts) |
+| `POST /api/v1/auth/login` | [backend/src/presentation/http/auth/auth.controller.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/auth/auth.controller.ts) |
+| `POST /api/v1/auth/logout` | [backend/src/presentation/http/auth/auth.controller.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/auth/auth.controller.ts) |
+| `POST /api/v1/auth/refresh` | [backend/src/presentation/http/auth/auth.controller.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/auth/auth.controller.ts) |
+| `POST /api/v1/auth/register` | [backend/src/presentation/http/auth/auth.controller.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/auth/auth.controller.ts) |
+| `POST /api/v1/checkout` | [backend/src/presentation/http/checkout/checkout.controller.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/checkout/checkout.controller.ts) |
 
-### Catálogo (`/api/v1/products`)
+## Exemplo de requisição
 
-- Aceita `page`, `pageSize` e `search`, com transformadores que convertem e validam números com defaults seguros.
-- Resultados são cacheados em Redis (TTL configurável via `PRODUCTS_CACHE_TTL_SECONDS`) e invalidados a cada alteração administrativa.
-- Cada item retorna nome, preço em centavos, SKU, disponibilidade, flag de atividade e imagem opcional.
+```http
+POST /api/v1/checkout HTTP/1.1
+Authorization: Bearer <customer-access-token>
+Idempotency-Key: <unique-purchase-intent>
+Content-Type: application/json
 
-### Checkout (`/api/v1/checkout`)
+{"productId":"00000000-0000-4000-8000-000000000001","quantity":1}
+```
 
-- Requer `Authorization: Bearer` com papel `CUSTOMER` e header `Idempotency-Key`.
-- Payload: `productId` (UUID) e `quantity` (mínimo 1, máximo estoque disponível).
-- Fluxo: consulta resposta idempotente → abre transação no Postgres → adquire lock `checkout:lock:${productId}` → reserva estoque e cria pedido → enfileira job na BullMQ → retorna `201 Created` com resumo.
-- Tentativas duplicadas retornam `200 OK` com o payload armazenado. Erros mapeiam para `400` (header ausente), `409` (estoque), `422` (validação), `429` (throttling) e `503` (ERP indisponível).
+## Arquivos relacionados
 
-### Acompanhamento de pedidos (`/api/v1/orders/:id`)
+- [backend/src/main.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/main.ts)
+- [backend/src/presentation/http/checkout/checkout.controller.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/checkout/checkout.controller.ts)
+- [backend/src/application/checkout/create-checkout.command.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/application/checkout/create-checkout.command.ts)
+- [backend/src/application/checkout/enqueue-erp-sync.command.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/application/checkout/enqueue-erp-sync.command.ts)
+- [backend/src/infrastructure/queues/erp-sync.processor.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/infrastructure/queues/erp-sync.processor.ts)
+- [backend/prisma/schema.prisma](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/prisma/schema.prisma)
+- [docker-compose.yml](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/docker-compose.yml)
 
-- Disponível para o cliente dono do pedido e para administradores via RBAC.
-- Retorna status (`PENDING`, `PROCESSING`, `SUCCESS`, `FAILED`), histórico de retries e último motivo de falha.
+## Navegação
 
-### Catálogo administrativo (`/api/v1/admin/products`)
-
-- Protegido por JWT + roles; apenas `ADMIN` acessa.
-- `GET` pagina produtos com filtros de `search`, `page` e `pageSize` para o dashboard.
-- `POST` cria itens com `name`, `description`, `sku`, `priceCents`, `stock`, `imageUrl` opcional e `isActive`.
-- `GET /:id` retorna detalhes completos; `PATCH /:id` atualiza campos parciais; `DELETE /:id` desativa o produto (soft delete).
-- Toda alteração limpa o cache Redis do catálogo público.
-
-### Pedidos administrativos (`/api/v1/admin/orders`)
-
-- Exibe o backlog de pedidos com paginação e filtros por `status`, `customerId`, `page` e `pageSize` (1–50).
-- Resposta inclui dados do pedido, estado no ERP, timestamps e contadores de retry usados pelo painel.
-
-### Endpoints de plataforma
-
-- `GET /api/v1/health` verifica PostgreSQL e Redis em paralelo e responde `ok` ou `degraded` com o status de cada componente.
-- `GET /api/v1/metrics` expõe métricas Prometheus (latência do checkout, taxa de erro, profundidade de fila, estado do circuito).
-- `GET /docs` disponibiliza Swagger com alternância PT/EN para revisar contratos.
-
-## Idempotência e concorrência
-
-- Respostas ficam em `checkout:idempotency:${key}` no Redis, com TTL configurado por `IDEMPOTENCY_TTL_SECONDS` (default 600s).
-- Locks com `SET NX` por produto (`checkout:lock:${productId}`) serializam decrementos de estoque.
-- Transações no Postgres garantem atomicidade entre reserva de estoque, criação do pedido e persistência da idempotência.
-
-## Simulador de ERP e filas
-
-- Pedidos são enfileirados na BullMQ (`erp-sync`) imediatamente após a reserva.
-- O simulador respeita `ERP_SIMULATION_FAILURE_RATE`, `ERP_SIMULATION_MIN_DELAY_MS` e `MAX_DELAY_MS` para gerar latência e falhas reais.
-- Falhas consecutivas ativam o circuito (`CIRCUIT_BREAKER_FAILURE_THRESHOLD`, `CIRCUIT_BREAKER_RESET_TIMEOUT_MS`), pausando chamadas até o cooldown expirar.
-- Sucesso marca pedidos como `SUCCESS`; falhas definitivas resultam em `FAILED` com detalhes para o painel administrativo.
-
-## Segurança e observabilidade
-
-- Helmet, CORS e Nest Throttler reforçam cabeçalhos seguros, controle de origem e rate limiting.
-- Segredos JWT, hosts de Redis/Postgres e limites de requisição vivem no `.env` compartilhado.
-- Logger Pino inclui `requestId`, usuário autenticado, chave de idempotência e duração em cada entrada JSON.
-- Instrumentação OpenTelemetry cobre handlers do checkout e workers da fila, pronta para exportar via OTLP.
-- Métricas Prometheus e o healthcheck são usados pelos health checks do Docker e pelos smoke tests da pipeline.
-
-## Persistência e tooling
-
-- Mutações de schema acontecem via Prisma (`npm run prisma:migrate`); seeds populam usuários e produtos padrão.
-- Scripts auxiliares (`prisma:deploy`, `prisma:push`, `prisma:seed`) são executados automaticamente no Docker e podem ser rodados manualmente.
+- [Project guide](?menu=pt&lang=pt&id=8)
+- [Source reference](?menu=pt&lang=pt&id=9)

@@ -53,6 +53,34 @@
   },
   "routes-md": [
     {
+      "id": 8,
+      "title": {
+        "pt": "Contexto e fluxos do projeto",
+        "en": "Project context and workflows",
+        "es": "Contexto y flujos del proyecto"
+      },
+      "path": {
+        "pt": "gitpagedocs/docs/versions/1.0.0/pt/project-guide.md",
+        "en": "gitpagedocs/docs/versions/1.0.0/en/project-guide.md",
+        "es": "gitpagedocs/docs/versions/1.0.0/es/project-guide.md"
+      },
+      "fullscreenEnabled": true
+    },
+    {
+      "id": 9,
+      "title": {
+        "pt": "Referência do código",
+        "en": "Source reference",
+        "es": "Referencia del código"
+      },
+      "path": {
+        "pt": "gitpagedocs/docs/versions/1.0.0/pt/source-reference.md",
+        "en": "gitpagedocs/docs/versions/1.0.0/en/source-reference.md",
+        "es": "gitpagedocs/docs/versions/1.0.0/es/source-reference.md"
+      },
+      "fullscreenEnabled": true
+    },
+    {
       "id": 1,
       "title": {
         "pt": "Início",
@@ -60,9 +88,9 @@
         "es": "Inicio"
       },
       "description": {
-        "pt": "Resumo do projeto e links rápidos",
-        "en": "Project summary and quick links",
-        "es": "Resumen del proyecto y enlaces rápidos"
+        "pt": "Início",
+        "en": "Home",
+        "es": "Inicio"
       },
       "titleCss": "font-size: 1.85rem; font-weight: 700;",
       "titleDarkCss": "font-size: 1.85rem; font-weight: 700; color: var(--text);",
@@ -97,9 +125,9 @@
         "es": "Visión general del case"
       },
       "description": {
-        "pt": "Contexto, problemas e objetivos atendidos",
-        "en": "Context, pain points, and goals addressed",
-        "es": "Contexto, problemas y objetivos cubiertos"
+        "pt": "Visão geral do case",
+        "en": "Project overview",
+        "es": "Visión general del case"
       },
       "titleCss": "font-size: 1.85rem; font-weight: 700;",
       "titleDarkCss": "font-size: 1.85rem; font-weight: 700; color: var(--text);",
@@ -134,9 +162,9 @@
         "es": "Arquitectura y diseño"
       },
       "description": {
-        "pt": "Componentes, fluxos e decisões técnicas",
-        "en": "Components, flows, and technical decisions",
-        "es": "Componentes, flujos y decisiones técnicas"
+        "pt": "Arquitetura e design",
+        "en": "Architecture & design",
+        "es": "Arquitectura y diseño"
       },
       "titleCss": "font-size: 1.85rem; font-weight: 700;",
       "titleDarkCss": "font-size: 1.85rem; font-weight: 700; color: var(--text);",
@@ -171,9 +199,9 @@
         "es": "Back-end"
       },
       "description": {
-        "pt": "Endpoints, validações e simulação de ERP",
-        "en": "Endpoints, validations, and ERP simulation",
-        "es": "Endpoints, validaciones y simulación del ERP"
+        "pt": "Back-end",
+        "en": "Back-end",
+        "es": "Back-end"
       },
       "titleCss": "font-size: 1.85rem; font-weight: 700;",
       "titleDarkCss": "font-size: 1.85rem; font-weight: 700; color: var(--text);",
@@ -208,9 +236,9 @@
         "es": "Front-end"
       },
       "description": {
-        "pt": "Experiência do usuário e fluxo de checkout",
-        "en": "User experience and checkout flow",
-        "es": "Experiencia de usuario y flujo de checkout"
+        "pt": "Front-end",
+        "en": "Front-end",
+        "es": "Front-end"
       },
       "titleCss": "font-size: 1.85rem; font-weight: 700;",
       "titleDarkCss": "font-size: 1.85rem; font-weight: 700; color: var(--text);",
@@ -245,9 +273,9 @@
         "es": "Calidad y operaciones"
       },
       "description": {
-        "pt": "Execução, testes e observabilidade",
-        "en": "Execution, testing, and observability",
-        "es": "Ejecución, pruebas y observabilidad"
+        "pt": "Qualidade e operações",
+        "en": "Quality & operations",
+        "es": "Calidad y operaciones"
       },
       "titleCss": "font-size: 1.85rem; font-weight: 700;",
       "titleDarkCss": "font-size: 1.85rem; font-weight: 700; color: var(--text);",
@@ -282,9 +310,9 @@
         "es": "Preguntas conceptuales"
       },
       "description": {
-        "pt": "Respostas da Parte 1.A do desafio",
-        "en": "Required answers for challenge Part 1.A",
-        "es": "Respuestas obligatorias de la Parte 1.A del desafío"
+        "pt": "Perguntas conceituais",
+        "en": "Conceptual answers",
+        "es": "Preguntas conceptuales"
       },
       "titleCss": "font-size: 1.85rem; font-weight: 700;",
       "titleDarkCss": "font-size: 1.85rem; font-weight: 700; color: var(--text);",
@@ -315,6 +343,36 @@
   "routes-html": [],
   "routes-video": [],
   "menus-header-md": [
+    {
+      "id": 8,
+      "pt": {
+        "title": "Contexto e fluxos do projeto",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/pt/project-guide.md"
+      },
+      "en": {
+        "title": "Project context and workflows",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/en/project-guide.md"
+      },
+      "es": {
+        "title": "Contexto y flujos del proyecto",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/es/project-guide.md"
+      }
+    },
+    {
+      "id": 9,
+      "pt": {
+        "title": "Referência do código",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/pt/source-reference.md"
+      },
+      "en": {
+        "title": "Source reference",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/en/source-reference.md"
+      },
+      "es": {
+        "title": "Referencia del código",
+        "path-click": "gitpagedocs/docs/versions/1.0.0/es/source-reference.md"
+      }
+    },
     {
       "id": 1,
       "pt": {

@@ -1,81 +1,48 @@
----
-title: "Front-end"
-description: "Experiência, fluxo de dados e painel administrativo entregues pelo Casecell Checkout Service."
----
-
 # Front-end
 
-## Stack
+Checkout de produto com reserva de estoque, pedido, idempotência e sincronização assíncrona com ERP simulado. Há catálogo, autenticação, histórico/status de pedidos e administração. A resposta inicial confirma que o pedido foi aceito para processamento; o resultado do ERP é consultado posteriormente.
 
-- Next.js 15 (App Router) com TypeScript e layouts preparados para SSR/CSR.
-- Feature-Sliced Design para manter cenas, widgets, features e entidades desacopladas.
-- React Query controlando cache, retries e sincronização de dados com o backend.
-- Redux Toolkit + redux-persist para sessão de autenticação, carrinho e preferências.
-- Cliente Axios com anexação automática de JWT e rotação de refresh tokens via interceptor.
-- Tailwind CSS com tokens `brand`, tipografia Space Grotesk/Work Sans e animações Framer Motion.
+## Interface e estado
 
-## Destaques de arquitetura
+NestJS 10.3, Prisma 5.11/PostgreSQL, Redis, BullMQ 4, JWT/Passport e Argon2. Domain contém entidades/contratos; application comandos/queries/portas; infrastructure adaptadores Prisma/Redis/filas/ERP; presentation controllers. Frontend declara Next.js ^15.0.0-canary.120 e React ^18.3.1, Redux Persist e TanStack Query 5. Consulte o lockfile para a versão resolvida; o manifest usa uma faixa de pré-release.
 
-- `src/app` mantém as rotas (home, login, register, cart, admin) acopladas a scenes específicas.
-- `scenes/` orquestram a experiência de cada página; `features/` encapsulam lógicas de carrinho, checkout, auth e tema.
-- `shared/` concentra API client, normalização de ambiente, store, componentes de UI e utilitários.
-- `app/providers.tsx` injeta Redux, persistência, React Query e controle de tema de forma centralizada.
+Modelo central: User, Product, Order e OrderItem; preços/totais usam centavos. Há revogação de tokens, hash de senha e guards de roles. O cache de idempotência usa a chave recebida, sem comparação de payload nesse comando: gere uma chave nova por intenção de compra e reutilize-a apenas para repetir a mesma intenção. O enqueue ocorre após commit SQL, sem outbox transacional; uma falha entre as etapas exige inspeção. Lock com TTL e chave única não equivalem a garantia de exactly-once fim a fim.
 
-## Principais telas
+Autenticação → catálogo → seleção de um productId e quantity → POST /api/v1/checkout com Bearer JWT e Idempotency-Key. Apenas CUSTOMER pode criar checkout; customerId vem do token. Chave ausente retorna 400. A quantidade e o produto passam pelo DTO e caso de uso; o preço vem do registro no banco.
 
-1. **Home / Vitrine** (`scenes/home/ui/home-experience.tsx`)
-   - Hero destaca o valor do checkout resiliente com cards animados.
-   - `ProductGrid` entrega busca, paginação, skeletons e fallback de imagem com resumo lateral do item.
-   - Botões levam diretamente para login ou cadastro, reforçando o fluxo de compra.
+## Fontes verificadas
 
-2. **Carrinho & Checkout** (`scenes/cart/ui/cart-scene.tsx`)
-   - Itens persistem no storage, permitem ajustar quantidades limitadas pelo estoque e exibem subtotais imediatos.
-   - Mutação de checkout percorre cada item, envia cabeçalho de idempotência e exibe mensagens por produto.
-   - Gatilho exige autenticação; ausência de sessão gera aviso e desativa o CTA.
+- [frontend/src/app/admin/page.tsx](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/src/app/admin/page.tsx)
+- [frontend/src/app/cart/page.tsx](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/src/app/cart/page.tsx)
+- [frontend/src/app/login/page.tsx](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/src/app/login/page.tsx)
+- [frontend/src/app/page.tsx](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/src/app/page.tsx)
+- [frontend/src/app/register/page.tsx](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/src/app/register/page.tsx)
+- [frontend/src/features/auth/api/login.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/src/features/auth/api/login.ts)
+- [frontend/src/features/auth/api/logout.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/src/features/auth/api/logout.ts)
+- [frontend/src/features/auth/api/register.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/src/features/auth/api/register.ts)
+- [frontend/src/features/auth/model/auth-slice.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/src/features/auth/model/auth-slice.ts)
+- [frontend/src/features/cart/model/cart-slice.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/src/features/cart/model/cart-slice.ts)
+- [frontend/src/scenes/admin/ui/admin-orders-page.tsx](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/src/scenes/admin/ui/admin-orders-page.tsx)
+- [frontend/src/shared/api/admin-products.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/src/shared/api/admin-products.ts)
+- [frontend/src/shared/api/checkout.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/src/shared/api/checkout.ts)
+- [frontend/src/shared/api/client.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/src/shared/api/client.ts)
+- [frontend/src/shared/api/orders.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/src/shared/api/orders.ts)
+- [frontend/src/shared/api/products.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/src/shared/api/products.ts)
+- [frontend/src/shared/config/routes.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/src/shared/config/routes.ts)
+- [frontend/src/shared/store/hooks.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/src/shared/store/hooks.ts)
+- [frontend/src/shared/store/index.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/src/shared/store/index.ts)
 
-3. **Fluxos de autenticação** (`scenes/auth/ui`)
-   - Login e cadastro aplicam a política de senha do backend e redirecionam sessões já autenticadas.
-   - Inputs compartilham componentes com rótulos acessíveis, helper text e mensagens de erro inline.
-   - Sucesso grava tokens/expiração no Redux, permitindo refresh silencioso pelo interceptor.
+## Arquivos relacionados
 
-4. **Painel administrativo** (`scenes/admin/ui/admin-dashboard.tsx`)
-   - Guardas RBAC bloqueiam acesso de não administradores com mensagem contextual.
-   - Alternância entre visão de pedidos e catálogo aproveita paginação servidor + React Query.
-   - Modal de produto cobre criação/edição com pré-visualização de imagem e validação em massa; desativar realiza soft delete.
+- [backend/src/main.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/main.ts)
+- [backend/src/presentation/http/checkout/checkout.controller.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/checkout/checkout.controller.ts)
+- [backend/src/application/checkout/create-checkout.command.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/application/checkout/create-checkout.command.ts)
+- [backend/src/application/checkout/enqueue-erp-sync.command.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/application/checkout/enqueue-erp-sync.command.ts)
+- [backend/src/infrastructure/queues/erp-sync.processor.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/infrastructure/queues/erp-sync.processor.ts)
+- [backend/prisma/schema.prisma](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/prisma/schema.prisma)
+- [docker-compose.yml](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/docker-compose.yml)
 
-## Estado e fluxo de dados
+## Navegação
 
-- Um único `QueryClient` com stale time de 30s e retry 1 evita tempestade de requisições em cenários de latência.
-- Slices do Redux (`auth`, `cart`) expõem selectors tipados; persistência garante experiência contínua após reload.
-- Interceptor Axios executa refresh uma única vez por rajada 401, enfileirando chamadas até obter novo token ou limpar a sessão.
-- Helper `env` padroniza URLs públicas/internas para SSR e CSR.
-
-## Estados de UX contemplados
-
-| Situação | Comportamento |
-| --- | --- |
-| Carregando | Skeletons, placeholders com shimmer e botões desabilitados. |
-| Sucesso | Mensagens positivas, limpeza do carrinho e links rápidos para acompanhar pedidos. |
-| Validação | Erros inline nos campos e resumos claros em formulários de checkout/auth. |
-| Estoque insuficiente | Alertas destacados e limites rígidos de quantidade. |
-| Erro técnico | Mensagem amigável + opção de tentar novamente, incluindo falhas do ERP. |
-| Tentativa duplicada | Resposta reaproveitada quando a `Idempotency-Key` se repete. |
-| Autenticação obrigatória | Banner de aviso e CTA bloqueado até login. |
-| Acesso restrito | Painel administrativo avisa e bloqueia usuários sem papel `ADMIN`. |
-
-## Acessibilidade e responsividade
-
-- Grid responsivo cobre mobile, tablet e desktop; tabelas administrativas ficam roláveis com affordances claras.
-- Componentes utilizam aria labels, foco visível e contraste adequado em ambos os temas.
-- Animações são sutis (fade/translate) para respeitar preferências de movimento reduzido.
-
-## Internacionalização
-
-- Conteúdo principal permanece em português brasileiro, alinhado ao desafio.
-- Swagger, documentação e mensagens críticas possuem equivalentes em inglês para revisores.
-
-## Testes e qualidade
-
-- Jest + React Testing Library cobrem cenas e widgets principais com mocks MSW.
-- Lint (`npm run lint`) e TypeScript estrito mantêm alinhamento com tipos compartilhados do backend.
-- Roteiro manual garante validação ponta a ponta de checkout, idempotência e moderação no painel.
+- [Project guide](?menu=pt&lang=pt&id=8)
+- [Source reference](?menu=pt&lang=pt&id=9)

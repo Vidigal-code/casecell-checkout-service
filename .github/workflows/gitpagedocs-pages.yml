@@ -24,7 +24,7 @@ jobs:
     env:
       GITHUB_ACTIONS: "true"
       GITHUB_REPOSITORY: ${{ github.repository }}
-      GITPAGEDOCS_REPOSITORY_SEARCH: "true"
+      GITPAGEDOCS_REPOSITORY_SEARCH: "false"
     steps:
       - name: Checkout target repository
         uses: actions/checkout@v4
@@ -41,7 +41,7 @@ jobs:
 
       - name: Prepare runtime source
         run: |
-          git clone --depth 1 https://github.com/Vidigal-code/git-page-docs.git .gitpagedocs-runtime
+          git clone --depth 1 --branch v0.0.17 https://github.com/Vidigal-code/git-page-docs.git .gitpagedocs-runtime
           cp .gitpagedocs-runtime/gitpagedocs/icon.svg /tmp/default-icon.svg 2>/dev/null || true
           if [ -d gitpagelayouts ]; then
             rm -rf .gitpagedocs-runtime/gitpagelayouts
@@ -51,15 +51,36 @@ jobs:
             rm -rf .gitpagedocs-runtime/gitpagedocs
             cp -R gitpagedocs .gitpagedocs-runtime/gitpagedocs
           fi
-          mkdir -p .gitpagedocs-runtime/public
+          mkdir -p .gitpagedocs-runtime/frontend/public
           if [ -f icon.svg ]; then
-            cp icon.svg .gitpagedocs-runtime/public/icon.svg
+            cp icon.svg .gitpagedocs-runtime/frontend/public/icon.svg
           elif [ -f gitpagedocs/icon.svg ]; then
-            cp gitpagedocs/icon.svg .gitpagedocs-runtime/public/icon.svg
+            cp gitpagedocs/icon.svg .gitpagedocs-runtime/frontend/public/icon.svg
           elif [ -f /tmp/default-icon.svg ]; then
-            cp /tmp/default-icon.svg .gitpagedocs-runtime/public/icon.svg
+            cp /tmp/default-icon.svg .gitpagedocs-runtime/frontend/public/icon.svg
           fi
 
+      # This site is documentation-only. The runtime turns repository search on
+      # for every GitHub Actions build, which also stops /v/<version>/ pages from
+      # being prerendered. Let an explicit GITPAGEDOCS_REPOSITORY_SEARCH=false win.
+      - name: Disable repository search mode in runtime
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const file = '.gitpagedocs-runtime/frontend/src/shared/lib/repository-search/is-repository-search-enabled.ts';
+          const anchor = 'return env.GITHUB_ACTIONS === "true" || env.GITPAGEDOCS_REPOSITORY_SEARCH === "true";';
+          const source = fs.readFileSync(file, 'utf8');
+          if (source.includes('GITPAGEDOCS_REPOSITORY_SEARCH === "false"')) process.exit(0);
+          if (!source.includes(anchor)) {
+            console.error('Runtime changed: cannot disable repository search mode. Update this step.');
+            process.exit(1);
+          }
+          const guard = 'if (env.GITPAGEDOCS_REPOSITORY_SEARCH === "false") return false; ';
+          fs.writeFileSync(file, source.replace(anchor, guard + anchor));
+          NODE
+
+      # pnpm is pinned by the runtime (packageManager), not by this repository,
+      # so it can only be resolved after the runtime has been cloned.
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -74,6 +95,14 @@ jobs:
         working-directory: .gitpagedocs-runtime
         env:
           GITPAGEDOCS_PATH: "docs"
+
+      # The standalone source viewer only exists in repository search builds. Here
+      # its exported page is the not-found shell, which redirects to itself forever.
+      # Runs before the relocation below so it ends up at docs/source-viewer/.
+      - name: Send standalone source viewer to the documentation
+        run: |
+          mkdir -p .gitpagedocs-runtime/out/source-viewer
+          printf '%s' '<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=../"><title>Redirecting</title><a href="../">Documentation</a>' > .gitpagedocs-runtime/out/source-viewer/index.html
 
       - name: Relocate output to custom docs path
         run: |

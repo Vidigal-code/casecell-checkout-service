@@ -1,26 +1,28 @@
----
-title: "Parte 1.A — Preguntas conceptuales"
-description: "Respuestas escritas exigidas en la sección teórica del desafío CaseCellShop."
----
+# Preguntas conceptuales
 
-# Parte 1.A — Preguntas conceptuales
+Checkout de producto con reserva de inventario, pedido, idempotencia y sincronización asíncrona con ERP simulado. Incluye catálogo, autenticación, historial/estado y administración. La respuesta inicial confirma aceptación para procesamiento; el resultado ERP se consulta después.
 
-> Estas respuestas se entregaron junto al código, tal como solicitó el desafío.
+## Flujo y casos de fallo
 
-1. **¿Cómo reducir la dependencia directa del ERP en la tienda?**
-   - Introduciendo un Checkout Service intermedio que consume datos del ERP de forma asíncrona, expone APIs propias y mantiene stock/pedidos en su propia base.
+1. Autenticación → catálogo → un productId y quantity → POST /api/v1/checkout con Bearer JWT e Idempotency-Key. Solo CUSTOMER puede comprar; customerId viene del token. Clave ausente: 400. DTO/caso de uso validan cantidad/producto; precio viene del banco.
 
-2. **¿Cómo garantizar consistencia de stock bajo alta concurrencia?**
-   - Usando reservas transaccionales en la base relacional combinadas con locks distribuidos en Redis y reglas de dominio que evitan decrementos paralelos.
+2. Idempotencia Redis devuelve duplicate=true/HTTP 200 si hay respuesta. Si no, adquiere lock:product:{id} durante 5000 ms. Transacción Prisma verifica producto activo, decrementa con stock >= quantity y crea pedido PENDING/items. Inventario insuficiente: 409; producto ausente/inactivo falla. Luego marca PROCESSING, encola sync-order y cachea respuesta con TTL configurable (600 s). Éxito inicial: HTTP 201.
 
-3. **¿Cómo manejar un ERP lento o inestable durante el checkout?**
-   - Persistiendo el pedido inmediatamente y delegando la sincronización a una cola BullMQ con retries, circuit breaker y observabilidad, evitando que el cliente espere al ERP.
+3. Worker consulta pedido y circuit breaker erp:global. Éxito marca SUCCESS, actualiza idempotencia, invalida catálogo y registra métricas. Error/circuito abierto marca FAILED e intenta devolver inventario; errores del gateway se propagan. EnqueueErpSyncCommand usa attempts:1 sin backoff: no hay retry automático de negocio. Jobs fallidos se conservan.
 
-4. **¿Qué estrategia simple de idempotencia se implementó?**
-   - Exigir el header `Idempotency-Key`, almacenar la respuesta en Redis y devolver el mismo payload para intentos futuros con la misma clave.
+4. La interfaz sigue estado/historial; administración modifica productos y consulta pedidos según roles. Fallos técnicos tras reservar intentan compensar inventario y marcar FAILED. Compensación tiene logs y puede fallar; inspeccione banco/cola antes de repetir manualmente.
 
-5. **¿Cómo se organiza el código para evolucionar con seguridad?**
-   - Aplicando DDD / Clean Architecture, separando dominio, aplicación, infraestructura y presentación, y definiendo puertos claros para integraciones externas.
+## Archivos relacionados
 
-6. **¿Qué próximos pasos se recomiendan para producción?**
-   - CDC del ERP para stock/catálogo, observabilidad distribuida completa, colas de compensación, rate limiting por cuenta y dashboards de conversión/SLA.
+- [backend/src/main.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/main.ts)
+- [backend/src/presentation/http/checkout/checkout.controller.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/checkout/checkout.controller.ts)
+- [backend/src/application/checkout/create-checkout.command.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/application/checkout/create-checkout.command.ts)
+- [backend/src/application/checkout/enqueue-erp-sync.command.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/application/checkout/enqueue-erp-sync.command.ts)
+- [backend/src/infrastructure/queues/erp-sync.processor.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/infrastructure/queues/erp-sync.processor.ts)
+- [backend/prisma/schema.prisma](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/prisma/schema.prisma)
+- [docker-compose.yml](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/docker-compose.yml)
+
+## Navegación
+
+- [Project guide](?menu=es&lang=es&id=8)
+- [Source reference](?menu=es&lang=es&id=9)

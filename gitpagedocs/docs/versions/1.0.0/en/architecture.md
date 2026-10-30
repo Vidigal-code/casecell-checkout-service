@@ -1,71 +1,40 @@
----
-title: "Architecture & design"
-description: "Components, flows, and decisions behind the Casecell Checkout Service."
----
-
 # Architecture & design
 
-## High-level view
+Product checkout with stock reservation, orders, idempotency and asynchronous synchronization with a simulated ERP. It includes catalog, authentication, order history/status and administration. The initial response confirms acceptance for processing; the ERP outcome is queried later.
 
+## Implemented behavior
+
+NestJS 10.3, Prisma 5.11/PostgreSQL, Redis, BullMQ 4, JWT/Passport and Argon2. Domain holds entities/contracts; application commands/queries/ports; infrastructure Prisma/Redis/queue/ERP adapters; presentation controllers. Frontend declares Next.js ^15.0.0-canary.120, React ^18.3.1, Redux Persist and TanStack Query 5. Check the lockfile for resolved versions; the manifest uses a prerelease range.
+
+```mermaid
+sequenceDiagram
+  participant UI as Customer
+  participant API as Checkout
+  participant R as Redis
+  participant DB as PostgreSQL
+  participant Q as BullMQ worker
+  participant ERP as ERP simulator
+  UI->>API: Product, quantity, idempotency key
+  API->>R: Read response and acquire lock
+  API->>DB: Reserve stock and create order
+  API->>Q: sync-order, one attempt
+  API-->>UI: 201 PROCESSING
+  Q->>ERP: Process order
+  Q->>DB: SUCCESS or FAILED and compensation
+  UI->>API: Query order status
 ```
-Web client → Next.js 15 (React Query + Redux) → NestJS API → PostgreSQL / Redis → ERP simulator (BullMQ)
-```
 
-### Main layers
+## Related files
 
-- **Frontend (Next.js 15 / Feature-Sliced Design)**
-  - Scene-driven pages (`scenes/`), reusable widgets/features.
-  - React Query for caching, manual suspense, and loading indicators.
-  - Redux Toolkit to persist the cart and user preferences.
-  - Tailwind CSS + Framer Motion for responsive UI with subtle motion.
+- [backend/src/main.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/main.ts)
+- [backend/src/presentation/http/checkout/checkout.controller.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/checkout/checkout.controller.ts)
+- [backend/src/application/checkout/create-checkout.command.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/application/checkout/create-checkout.command.ts)
+- [backend/src/application/checkout/enqueue-erp-sync.command.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/application/checkout/enqueue-erp-sync.command.ts)
+- [backend/src/infrastructure/queues/erp-sync.processor.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/infrastructure/queues/erp-sync.processor.ts)
+- [backend/prisma/schema.prisma](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/prisma/schema.prisma)
+- [docker-compose.yml](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/docker-compose.yml)
 
-- **Backend (NestJS 10)**
-  - DDD / Clean Architecture folders (`domain`, `application`, `infrastructure`, `presentation`).
-  - HTTP controllers under `/api/v1`, validated with `class-validator` and `class-transformer`.
-  - JWT authentication with access/refresh tokens and refresh rotation.
-  - Role-based guards (`CUSTOMER`, `ADMIN`) enforced through decorators and Nest guards.
-  - Prisma ORM (PostgreSQL) for products, orders, and idempotency records.
-  - Redis handles locks, catalog cache, idempotency storage, and BullMQ queues.
-  - Bilingual Swagger UI (`/docs`) kept in sync with DTOs and use cases.
+## Navigation
 
-- **Queue & ERP simulator**
-  - BullMQ processes asynchronous ERP sync jobs.
-  - A configurable simulator produces latency and transient failures to exercise resilience.
-  - A circuit breaker protects the system when the ERP remains unstable.
-
-## Critical flows
-
-1. **Catalog**
-   - `GET /products` reads from Postgres with pagination, search, and Redis caching.
-   - Query DTOs convert parameters (`page`, `pageSize`) safely to numeric types.
-
-2. **Checkout**
-   - `POST /checkout` validates payload (product, quantity, idempotency header, optional customer).
-   - A Postgres transaction reserves stock, creates the order, and enqueues a job.
-   - Redis locks (`SET NX`) shield stock decrement under concurrency.
-   - Idempotency replays the previous response for the same `Idempotency-Key`.
-
-3. **ERP sync**
-   - BullMQ worker consumes pending orders.
-  - The simulator returns success, transient failure, or fatal error.
-  - Retries with backoff update order status (`PENDING`, `PROCESSING`, `SUCCESS`, `FAILED`).
-
-## Security & governance
-
-- Single root `.env` shared by backend and frontend.
-- Helmet + throttling guard the API.
-- CORS configurable via environment variables (allowed origins, headers, methods).
-- Structured logs (Pino) with per-request correlation IDs.
-- JWT secrets stored in env vars, refresh token rotation, and rate limiting with Nest Throttler.
-
-## Observability
-
-- **/metrics** exposes Prometheus metrics (latency, success/error ratios, queue health).
-- **OpenTelemetry** spans wrap checkout and ERP worker operations.
-- **Logs** output enriched JSON, ready for ELK/Loki pipelines.
-
-## Planned evolution
-
-- CDC/streaming from the ERP to keep stock mirrored in near real time.
-- Rate limiting per user/customer account.
-- Dedicated operator dashboard to monitor conversion and SLA KPIs.
+- [Project guide](?menu=en&lang=en&id=8)
+- [Source reference](?menu=en&lang=en&id=9)

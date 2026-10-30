@@ -1,106 +1,89 @@
----
-title: "Calidad y operaciones"
-description: "Configuración, ejecución, pruebas y observabilidad del Casecell Checkout Service."
----
-
 # Calidad y operaciones
 
-## Requisitos previos
+Checkout de producto con reserva de inventario, pedido, idempotencia y sincronización asíncrona con ERP simulado. Incluye catálogo, autenticación, historial/estado y administración. La respuesta inicial confirma aceptación para procesamiento; el resultado ERP se consulta después.
 
-- Node.js 20+
-- npm 9+
-- Docker Desktop para levantar base, cache y servicios con un solo comando
+## Configuración y despliegue
 
-## Configuración de entorno
+Copie envexample.txt a .env. Compose contiene PostgreSQL, Redis, aplicaciones y servicios de prueba. Scripts Prisma usan run-with-env; diferencie prisma:migrate de desarrollo y prisma:deploy de migrations existentes. npm test backend ejecuta pretest que prepara banco: use uno dedicado. Ejecute unit/integration/e2e, lint/build. PROCESSING persistente: worker/cola; FAILED: ERP/compensación; 409: inventario/lock; 401/403: token/rol. Métricas/Pino ayudan; ERP es simulado.
 
-1. Copiar la plantilla en la raíz del repo:
-   ```bash
-   cp envexample.txt .env
-   ```
-2. Revisar las variables esenciales antes de ejecutar:
-   - `DATABASE_URL`, `TEST_DATABASE_URL` y los valores `POSTGRES_*`
-   - `REDIS_HOST`, `REDIS_PORT`
-   - Secretos JWT (`JWT_ACCESS_TOKEN_SECRET`, `JWT_REFRESH_TOKEN_SECRET`) y expiraciones
-   - Parámetros del simulador (`ERP_SIMULATION_FAILURE_RATE`, `ERP_SIMULATION_MIN_DELAY_MS`, `ERP_SIMULATION_MAX_DELAY_MS`)
-   - `IDEMPOTENCY_TTL_SECONDS`, `PRODUCTS_CACHE_TTL_SECONDS`, límites de rate limiting
-   - `NEXT_PUBLIC_API_BASE_URL`, `INTERNAL_API_BASE_URL`, `NEXT_PUBLIC_DEFAULT_THEME`
+## Comandos de ejecución
 
-## Ejecución local
-
-### Backend
-
-```bash
-cd backend
-npm install
-npm run prisma:generate
-npm run prisma:migrate
-npm run prisma:seed
-npm run start:dev
-```
-
-Servicios disponibles:
-
-- API REST + auth: <http://localhost:3001/api/v1>
-- Swagger bilingüe: <http://localhost:3001/docs>
-- Métricas Prometheus: <http://localhost:3001/metrics>
-- Health check: <http://localhost:3001/api/v1/health>
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Vitrina y panel admin: <http://localhost:3000>
-
-## Workflow con Docker
-
-```bash
+```sh
 docker compose up --build
+# Validation in a separately configured test environment
+npm --prefix backend install
+npm --prefix backend run test:unit
+npm --prefix backend run test:integration
+npm --prefix backend run build
+npm --prefix frontend install
+npm --prefix frontend run build
 ```
 
-- Provisiona PostgreSQL, Redis, backend y frontend reutilizando el `.env` compartido.
-- El contenedor del backend ejecuta `prisma migrate deploy`, `prisma db push` y `prisma db seed` antes de iniciar.
-- Para ejecutar los perfiles de prueba dentro de los contenedores:
-  ```bash
-  docker compose --profile test up --build backend-tests frontend-tests
-  ```
+Los nombres proceden solo de archivos de ejemplo y referencias del código. Configure los valores localmente; se excluyen credenciales privadas. NEXT_PUBLIC_ y VITE_ son variables públicas en el navegador.
 
-## Pruebas automatizadas
-
-| Alcance | Comando |
+| Variable | Origen |
 | --- | --- |
-| Backend completo | `npm test` |
-| Backend unitario | `npm run test:unit` |
-| Backend integración | `npm run test:integration` |
-| Backend e2e | `npm run test:e2e` |
-| Frontend completo | `npm test` |
-| Frontend unitario | `npm run test:unit` |
-| Frontend integración | `npm run test:integration` |
-| Frontend e2e | `npm run test:e2e` |
+| `ADMIN_EMAIL` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/prisma/seed.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/prisma/seed.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `ADMIN_PASSWORD` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/prisma/seed.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/prisma/seed.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `BACKEND_PORT` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `CIRCUIT_BREAKER_FAILURE_THRESHOLD` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `CIRCUIT_BREAKER_RESET_TIMEOUT_MS` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `CORS_ALLOWED_HEADERS` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `CORS_ALLOWED_METHODS` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `CORS_ALLOWED_ORIGINS` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `CORS_ALLOW_CREDENTIALS` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `CORS_EXPOSED_HEADERS` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `CORS_MAX_AGE` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `CUSTOMER_EMAIL` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/prisma/seed.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/prisma/seed.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `CUSTOMER_PASSWORD` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/prisma/seed.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/prisma/seed.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `DATABASE_URL` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `ERP_SIMULATION_FAILURE_RATE` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [backend/src/infrastructure/erp/erp-simulator.service.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/infrastructure/erp/erp-simulator.service.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `ERP_SIMULATION_MAX_DELAY_MS` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [backend/src/infrastructure/erp/erp-simulator.service.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/infrastructure/erp/erp-simulator.service.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `ERP_SIMULATION_MIN_DELAY_MS` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [backend/src/infrastructure/erp/erp-simulator.service.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/infrastructure/erp/erp-simulator.service.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `FRONTEND_PORT` | [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `IDEMPOTENCY_TTL_SECONDS` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `INTERNAL_API_BASE_URL` | [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt), [frontend/next.config.js](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/next.config.js), [frontend/src/shared/config/env.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/src/shared/config/env.ts) |
+| `JWT_ACCESS_TOKEN_EXPIRES_IN` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [backend/src/infrastructure/auth/jwt-token.service.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/infrastructure/auth/jwt-token.service.ts), [backend/src/presentation/http/auth/auth.module.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/auth/auth.module.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `JWT_ACCESS_TOKEN_SECRET` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [backend/src/infrastructure/auth/jwt-token.service.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/infrastructure/auth/jwt-token.service.ts), [backend/src/presentation/http/auth/auth.module.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/auth/auth.module.ts), [backend/src/presentation/http/auth/jwt.strategy.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/auth/jwt.strategy.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `JWT_REFRESH_TOKEN_EXPIRES_IN` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [backend/src/infrastructure/auth/jwt-token.service.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/infrastructure/auth/jwt-token.service.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `JWT_REFRESH_TOKEN_SECRET` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [backend/src/infrastructure/auth/jwt-token.service.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/infrastructure/auth/jwt-token.service.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `LOG_BACKUP_COUNT` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `LOG_FILE_ENABLED` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/infrastructure/logger/pino-logger.service.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/infrastructure/logger/pino-logger.service.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `LOG_FILE_PATH` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/infrastructure/logger/pino-logger.service.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/infrastructure/logger/pino-logger.service.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `LOG_LEVEL` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/infrastructure/logger/pino-logger.service.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/infrastructure/logger/pino-logger.service.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `LOG_ROTATION_WHEN` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `NEXT_PUBLIC_API_BASE_URL` | [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt), [frontend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/envexample.txt), [frontend/src/shared/config/env.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/src/shared/config/env.ts) |
+| `NEXT_PUBLIC_DEFAULT_THEME` | [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt), [frontend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/envexample.txt), [frontend/src/shared/config/env.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/frontend/src/shared/config/env.ts) |
+| `NODE_ENV` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [backend/src/infrastructure/logger/pino-logger.service.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/infrastructure/logger/pino-logger.service.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `PORT` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `POSTGRES_DB` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `POSTGRES_PASSWORD` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `POSTGRES_PORT` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `POSTGRES_USER` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `PRODUCTS_CACHE_TTL_SECONDS` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `RATE_LIMIT_MAX` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `RATE_LIMIT_TTL` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `REDIS_HOST` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [backend/src/infrastructure/redis/redis.module.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/infrastructure/redis/redis.module.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `REDIS_PASSWORD` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [backend/src/infrastructure/redis/redis.module.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/infrastructure/redis/redis.module.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `REDIS_PORT` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [backend/src/infrastructure/redis/redis.module.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/infrastructure/redis/redis.module.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `SECURITY_HSTS_INCLUDE_SUBDOMAINS` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `SECURITY_HSTS_MAX_AGE` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `SECURITY_HSTS_PRELOAD` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `SECURITY_REFERRER_POLICY` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [backend/src/config/configuration.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/config/configuration.ts), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `TEST_DATABASE_URL` | [backend/envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/envexample.txt), [envexample.txt](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/envexample.txt) |
+| `TS_NODE_PROJECT` | [backend/scripts/run-seed.js](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/scripts/run-seed.js) |
 
-> Antes de lanzar las pruebas del backend, asegúrate de que PostgreSQL esté arriba (`docker compose up -d postgres`) y que `TEST_DATABASE_URL` apunte a `casecell_test`.
+## Archivos relacionados
 
-## Observabilidad y operaciones
+- [backend/src/main.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/main.ts)
+- [backend/src/presentation/http/checkout/checkout.controller.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/presentation/http/checkout/checkout.controller.ts)
+- [backend/src/application/checkout/create-checkout.command.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/application/checkout/create-checkout.command.ts)
+- [backend/src/application/checkout/enqueue-erp-sync.command.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/application/checkout/enqueue-erp-sync.command.ts)
+- [backend/src/infrastructure/queues/erp-sync.processor.ts](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/src/infrastructure/queues/erp-sync.processor.ts)
+- [backend/prisma/schema.prisma](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/backend/prisma/schema.prisma)
+- [docker-compose.yml](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/docker-compose.yml)
 
-- **Logs**: Pino genera JSON con `requestId`, usuario autenticado, Idempotency-Key y duración (logging a archivo controlado por `LOG_FILE_*`).
-- **Métricas**: `/api/v1/metrics` publica histograma de latencia, ratio de errores, profundidad de cola y estado del circuito.
-- **Health**: `/api/v1/health` distingue `ok` vs `degraded`, exponiendo la salud de PostgreSQL y Redis para los health checks de Docker.
-- **Tracing**: OpenTelemetry instrumenta handlers de checkout y workers de la cola, listo para exportar vía OTLP.
-- **Swagger**: `/docs` refleja los contratos PT/EN; ejecuta `npm run build` tras modificar DTOs para mantenerlo alineado.
+## Navegación
 
-## Guion de validación manual
-
-1. Abrir la vitrina, validar animaciones, skeletons y búsqueda responsiva.
-2. Agregar productos al carrito, probar límites de stock y persistencia tras recargar.
-3. Autenticarse con el usuario seed, ejecutar el checkout dos veces con la misma `Idempotency-Key` y comprobar la respuesta duplicada.
-4. Ingresar a `/admin`, filtrar pedidos, desactivar/reactivar un producto y confirmar el cambio en el catálogo público.
-5. Revisar `/api/v1/metrics` y los logs para confirmar visibilidad de la simulación ERP.
-
-## Próximos pasos sugeridos
-
-- Automatizar regresiones end-to-end con Playwright o Cypress.
-- Configurar pipeline CI (GitHub Actions) con lint, pruebas y build Docker en cada PR.
-- Publicar dashboards Grafana usando métricas Prometheus y alarmas para circuito/colas.
+- [Project guide](?menu=es&lang=es&id=8)
+- [Source reference](?menu=es&lang=es&id=9)
