@@ -1,6 +1,6 @@
 # casecell-checkout-service: Contexto e fluxos do projeto
 
-GitPageDocs **0.0.29** · 1.0.0 · 2026-11-23
+GitPageDocs **0.0.30** · 1.0.0 · 2026-11-24
 
 ## Contexto
 
@@ -66,9 +66,9 @@ Dependências, comandos, endpoints, variáveis, contratos e testes estão na [re
 
 - [docker-compose.yml](https://github.com/Vidigal-code/casecell-checkout-service/blob/0710aade2a2137cc98f52f138f8c883e7fdd4a4b/docker-compose.yml)
 
-## Navegação da documentação com GitPageDocs 0.0.29
+## Navegação da documentação com GitPageDocs 0.0.30
 
-Este guia descreve o runtime GitPageDocs **0.0.29**. A versão documental deste projeto continua **1.0.0**. Atualizar o texto e a configuração não atualiza, por si só, o runtime publicado pelo workflow.
+Este guia descreve o runtime GitPageDocs **0.0.30**. A versão documental deste projeto continua **1.0.0**. Atualizar o texto e a configuração não atualiza, por si só, o runtime publicado pelo workflow.
 
 ### Índice por tags
 
@@ -117,3 +117,11 @@ Na 0.0.29, Anterior, Próximo e Subir ao topo ficam dentro do cartão Markdown, 
 Os botões de ícone seguem o padrão compacto de copiar e baixar: 36px no desktop, com altura mínima de toque de 44px em dispositivos de ponteiro impreciso, como celulares. Rótulos e ícones configurados, foco por teclado e limites desabilitados de navegação são preservados. Subir ao topo continua respeitando `site.backToTop.enabled` e `minPageHeightViewports`.
 
 O modo foco usa o olho enquadrado `LuScanEye` em `site.icons.FocusMode.tag`. Esse botão abre a leitura em foco; copiar, baixar, navegar e fechar mantêm suas funções. Personalizações de cor, tamanho, imagem e texto continuam disponíveis.
+
+## Arquivos de código fonte e navegação da árvore no GitPageDocs 0.0.30
+
+Desde a 0.0.30, Código fonte reconhece arquivos UTF-16LE e UTF-16BE pela marca de ordem de bytes (BOM). O visualizador remove a marca inicial e preserva acentos, texto de alfabetos não latinos e emoji. Arquivos sem BOM de UTF-16 continuam sendo decodificados como UTF-8, incluindo arquivos UTF-8 com BOM. Isso corrige a exibição de arquivos como um `.gitignore` em UTF-16 sem alterar o arquivo do repositório.
+
+A árvore de arquivos permite rolagem horizontal e vertical e exibe os nomes completos de arquivos e pastas. Clicar na linha de uma pasta expande ou recolhe seus itens sem trocar o arquivo aberto nem o endereço atual. A listagem central, os caminhos de navegação e os resultados de pastas filtrados continuam permitindo navegar pelos diretórios. Confira nomes longos e pastas com vários níveis nas duas direções de rolagem; abrir e fechar uma pasta repetidamente deve preservar o arquivo selecionado e o endereço.
+
+O visualizador não tenta adivinhar a codificação de arquivos UTF-16 sem BOM nem adiciona rotas de Código fonte automaticamente. Onde essa visualização estiver configurada, abra um `.gitignore` UTF-16 válido pela lista de diretórios e confira se `node_modules/` está legível. Confira também nomes ou conteúdos de arquivo com acentos, emoji e a volta ao diretório no desktop e no celular. A versão documental continua `1.0.0`.
